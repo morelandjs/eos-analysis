@@ -64,7 +64,7 @@ def e2T(e):
     Tub = Tmax
     Tmid = (Tub+Tlb)/2.
 
-    while error > 1e-8: 
+    while error > 1e-12: 
         e0 = fe(Tmid)*Tmid**4./hbarc**3;
         if counts > 50:
             print "error excessive bisections: ",counts

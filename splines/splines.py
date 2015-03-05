@@ -82,7 +82,7 @@ k1, k4, k2, k3, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16 = np.loadt
 N = k1.size
 
 # loop over splines (range fixed to 1 to test first interaction measure)
-for ic in range(5):
+for ic in range(100):
 
     # initialize basis functions
     B1 = np.zeros(nT)
@@ -223,7 +223,10 @@ for ic in range(5):
         
 
     # plot that shit!
-    ppl.plot(Tvec,I)
+    #ppl.plot(Tvec,I)
+
+    # save to text output
+    np.savetxt("realizations/hotqcd-measure/HotQCD-EOS-spline_{}.dat".format(ic), np.c_[Tvec,I], fmt='%10.5f')
     
 
 # uncomment to plot basis splines    

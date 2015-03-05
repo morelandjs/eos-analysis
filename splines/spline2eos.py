@@ -11,39 +11,19 @@ from scipy.integrate import quad
 
 # constants
 hbarc = 0.19733
+T0 = 0.13
 
-# temperature limits in GeV
-Tmin = 0.05
-Tmax = 0.7
-dT = 0.001
-nT = int((Tmax-Tmin)/dT)
-T = np.linspace(Tmin,Tmax,nT)
-
-# eos parameters
-Tc = 0.154
-ct = 3.8706
-an = -8.7704
-bn = 3.9200
-cn = 0.0
-dn = 0.3419
-t0 = 0.9761
-ad = -1.2600
-bd = 0.8425
-cd = 0.0
-dd = -0.0475
-tb = T/Tc
-pid = 47.5*np.pi**2./90.
+# load interaction measure (e-3p)/T**4 as function of temperature
+Tvec, I = np.loadtxt("realizationis/hotqcd-measure/HotQCD-EOS-spline_{}.dat".format(ic),Tvec,I)
+fI = interp1d(Tvec, I, kind='cubic')
+nT = Tvec.size
 
 # pressure over T^4
-p = 0.5*(1.+np.tanh(ct*(tb-t0)))*(pid+an/tb+bn/tb**2.+cn/tb**3.+dn/tb**4.)/(1.+ad/tb+bd/tb**2.+cd/tb**3.+dd/tb**4.)
-dfp = interp1d(T, interpolate.splev(T,interpolate.splrep(T,p,s=0),der=1), kind='cubic')
-fp = interp1d(T, p, kind='cubic')
-
-# trace anomaly over T^4
-I = []
-for iT in T:
-    I.append(dfp(iT)*iT)
-fI = interp1d(T, I, kind='cubic')
+p = []
+for T in Tvec:
+    p.append(p0/T0**4 + integrate.quad(lambda x: fI(x)/x, T0, T)[0])
+p = np.asarray(p)
+fp = interp1d(Tvec, p, kind='cubic')
 
 # energy density over T^4 
 e = []

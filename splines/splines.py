@@ -132,6 +132,7 @@ for ic in range(100):
 
     # construct intermediate interaction measure
     Imid = C6[ic] + C5[ic]*(Tvec-130.) + C7[ic]*B[1] + C8[ic]*B[2] + C9[ic]*B[3] + C10[ic]*B[4]
+    #ppl.plot(Tvec,Imid,'r-')
 
     # construct low temp HRG limit
     for iT in range(nT):
@@ -142,8 +143,8 @@ for ic in range(100):
             Ilo[iT] = Imid[iT]
 
     # find where low temp first derivative matches
-    iTlb = int((129.-Tmin)/dT)
-    iTub = int((131.-Tmin)/dT)
+    iTlb = int((110.-Tmin)/dT)
+    iTub = int((130.-Tmin)/dT)
     
     for iT in range(nT-1):
         T = Tmin + iT*dT
@@ -169,13 +170,13 @@ for ic in range(100):
     # blend at cut
     for iT in range(nT):
         T = Tmin+iT*dT
-        Imid[iT] = Ilo[iT] + (1.+np.tanh((T-Tlsw)/20.))/2.*(Imid[iT] - Ilo[iT])
+        Imid[iT] = Ilo[iT] + (1.+np.tanh((T-Tlsw)/10.))/2.*(Imid[iT] - Ilo[iT])
 
     # blend second time into HRG curve
     for iT in range(nT):
         T = Tmin+iT*dT
-        if(50. < T and T < 180.):
-            Imid[iT] = fIHRG(T/1000.) + (1.+np.tanh((T-100)/40.))/2.*(Imid[iT] - fIHRG(T/1000.))
+        if(50. <= T and T < 220.):
+            Imid[iT] = fIHRG(T/1000.) + (1.+np.tanh((T-120)/20.))/2.*(Imid[iT] - fIHRG(T/1000.))
 
     # construct high temp limit
     for iT in range(nT):
@@ -223,10 +224,10 @@ for ic in range(100):
         
 
     # plot that shit!
-    #ppl.plot(Tvec,I)
+    ppl.plot(Tvec,I)
 
     # save to text output
-    np.savetxt("realizations/hotqcd-measure/HotQCD-EOS-spline_{}.dat".format(ic), np.c_[Tvec,I], fmt='%10.5f')
+    np.savetxt("realizations/hotqcd-measure/hotqcd-eos-spline_{}.dat".format(ic), np.c_[Tvec,I], fmt='%10.5f')
     
 
 # uncomment to plot basis splines    

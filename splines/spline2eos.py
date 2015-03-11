@@ -12,7 +12,7 @@ from scipy.integrate import quad
 
 # constants
 hbarc = 0.19733
-T0 = 130 
+T0 = 0.13 
 
 # loop over spline files
 for ic in range(100):
@@ -48,7 +48,6 @@ for ic in range(100):
     		s.append(e[iT] + p[iT])
 	fs = interp1d(Tvec, s, bounds_error=True)
 
-
 	# convert e in GeV to temperature in GeV
 	def e2T(e):
     		counts = 0
@@ -61,6 +60,8 @@ for ic in range(100):
         		e0 = fe(Tmid)*Tmid**4./hbarc**3;
         		if counts > 50:
             			print "error excessive bisections: ",counts
+				print(Tmid)
+				quit()
         		if e0 > e:
             			Tub = Tmid
         		if e0 <= e:
@@ -100,14 +101,17 @@ for ic in range(100):
 	line = FortranRecordWriter('(4E15.6)')
 
 	# open output file
-	with open('HotQCD-EOS.dat','w') as wf:
-    		for i in range(len(eEOS)):
+	with open("realizations/hotqcd-eos/HotQCD-EOS-{}.dat".format(ic),'w') as wf:
+         	for i in range(len(eEOS)):
         		wf.write(line.write([eEOS[i],pEOS[i],sEOS[i],TEOS[i]])+"\n")
 
 	# plot curves
-	plt.plot(Tinv,eEOS,"-")
-	plt.plot(Tinv,sEOS,"-")
-	plt.plot(Tinv,pEOS,"-")
+	plt.plot(Tvec,e)
+	plt.plot(Tvec,p)
+	plt.plot(Tvec,s)
+	#plt.plot(Tinv,eEOS,"-")
+	#plt.plot(Tinv,sEOS,"-")
+	#plt.plot(Tinv,pEOS,"-")
 
 # plot properties
 #plt.legend(loc='upper right')

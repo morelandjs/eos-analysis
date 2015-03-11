@@ -6,43 +6,39 @@ import prettyplotlib as ppl
 from prettyplotlib import brewer2mpl
 from scipy import interpolate
 from scipy.interpolate import interp1d
+from scipy.optimize import fminbound
 from scipy import integrate
 from scipy.integrate import quad
 
 ####################################################################################
 
-# construct low temperature HRG EOS (HotQCD full resonances)
+# construct low temperature interaction measure 
+
 #T,QS,PN,EN,PEN,SN,CV,SNCV = np.loadtxt("hrg-eos/OUT_2.5.DAT140_2014_bulk",dtype='float',unpack=True,skiprows=2)
 #fIHRG = interp1d(T, QS, kind='cubic')
-#fPHRG = interp1d(T, PN, kind='cubic')
-#THRG = np.linspace(30,220,100)
-#ppl.plot(THRG/1000,fIHRG(THRG),'--',color="purple",linewidth=3.0,zorder = 300,label="HRG full reson")
 
-# construct low temperature HRG EOS (UrQMD partial resonances)
 T, I, e, p, Cs = np.loadtxt("hrg-eos/hrg-urqmd-eos.dat",dtype='float',unpack=True,skiprows=1)
-fIHRG = interp1d(T, I, bounds_error=False, fill_value=0.0, kind='cubic')
-fPHRG = interp1d(T, p, kind='cubic')
-THRG = np.linspace(5,200,100)
-ppl.plot(THRG/1000,fIHRG(THRG),'--',color='orange',linewidth=3.0,zorder = 301, label="HRG UrQMD partial reson")
+fI_lo = interp1d(T, I, kind='cubic')
 
+T = np.linspace(5,200,100)
+ppl.plot(T/1000,fI_lo(T),'--',color='orange',linewidth=3.0,zorder = 301, label="HRG UrQMD partial reson")
 ####################################################################################
 
-# plot average HotQCD QGP EOS
-T,I,p,e,s,cv,cs = np.loadtxt("hotqcd-eos/EOS-table.txt",dtype='float',unpack=True,skiprows=1)
-T /= 1000
-#ppl.plot(T,I,color="red",linewidth=3.0,zorder = 100, label="HotQCD continuum extr.")
-
-# constants
-hbarc = 0.19733
+# construct high temperature interaction measure
+ 
+#T,I,p,e,s,cv,cs = np.loadtxt("hotqcd-eos/EOS-table.txt",dtype='float',unpack=True,skiprows=1)
+#T = np.linspace(65,800,1000)
+#ppl.plot(T/1000,I,color="red",linewidth=3.0,zorder = 100, label="HotQCD continuum extr.")
 
 # temperature limits [GeV]
-Tmin = 0.050
+Tmin = 0.065
 Tmax = 0.800
 dT = 0.001
 nT = int((Tmax-Tmin)/dT)
 T = np.linspace(Tmin,Tmax,nT)
 
 # eos parameters
+hbarc = 0.19733
 Tc = 0.154
 ct = 3.8706
 an = -8.7704
@@ -66,13 +62,15 @@ fp = interp1d(T, p, kind='cubic')
 I = []
 for iT in T:
     I.append(dfp(iT)*iT)
-fI = interp1d(T*1000, I, bounds_error=False, fill_value=0.0, kind='cubic')
+fI_hi = interp1d(T*1000, I, kind='cubic')
 
-# plot HotQCD trace anomaly
-TQGP = np.linspace(130,800,1000)
-#ppl.plot(TQGP/1000,fI(TQGP),color="blue",linewidth=3.0,zorder = 99,label="HotQCD parameterization")
+# plot HotQCD trace anomaly))
+T = np.linspace(130,800,1000)
+ppl.plot(T/1000,fI_hi(T),color="blue",linewidth=3.0,zorder = 99,label="HotQCD parameterization")
 
-###################################################################################################################################
+#########################################################################################################################
+
+#construct intermediate interaction measure
 
 # define temperature range and gradations
 Tmin = 5    # minimum temp
@@ -88,7 +86,7 @@ k1, k4, k2, k3, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16 = np.loadt
 N = k1.size
 
 # loop over splines (range fixed to 1 to test first interaction measure)
-for ic in range(5):
+for ic in range(50):
 
     # initialize basis functions
     B1 = np.zeros(nT)
@@ -113,7 +111,7 @@ for ic in range(5):
     
     # knot vector
     t = (k1[ic],k1[ic],k1[ic],k2[ic],k3[ic],k4[ic],k4[ic],k4[ic],k4[ic])
-    print "knot vector:",t
+    print("knot vector:",t)
 
     # initialize basis functions
     for i in range(8):
@@ -130,72 +128,32 @@ for ic in range(5):
 
     # construct intermediate interaction measure
     Imid = C6[ic] + C5[ic]*(Tvec-130) + C7[ic]*B[1] + C8[ic]*B[2] + C9[ic]*B[3] + C10[ic]*B[4]
+    fI_mid = interp1d(Tvec,Imid)  
 
-    # construct low/high temp interaction measures
+
+    # determine high temperature switching parameters
+    Td = np.linspace(350,400,1000)
+    dfI_mid = interp1d(Td, interpolate.splev(Td,interpolate.splrep(Td,fI_mid(Td),s=0),der=1))
+    dfI_hi = interp1d(Td, interpolate.splev(Td,interpolate.splrep(Td,fI_hi(Td),s=0),der=1))
+    deriv = interp1d(Td,abs(dfI_hi(Td)-dfI_mid(Td)))
+    Tsw = fminbound(deriv,350,400) 
+
+    # blend low, intermediate and high regions together
     for iT,T in enumerate(Tvec):
-	Ihi[iT] = fI(T)
-	if T < 180:
-	   Ilo[iT] = fIHRG(T)
-	if T >= 180 and T < 200:
-	   Ilo[iT] = fIHRG(T) + (1.+np.tanh((T-190)/5))/2.*(fI(T) - fIHRG(T))
-	else:
-	   Ilo[iT] = fI(T)
-    ppl.plot(Tvec/1000,Ihi)
-
-    # blend Ilo into Imid
-    Tlsw = 150
-    dTlsw = 10
-
-    for iT,T in enumerate(Tvec):
-	if T < 600:
-    		Imid[iT] = Ilo[iT] + (1.+np.tanh((T-Tlsw)/dTlsw))/2.*(Imid[iT] - Ilo[iT])
-	else:
-		Imid[iT] = Imid[np.argmax(Tvec >= 600)]
-    #ppl.plot(Tvec/1000,Imid)
-
-    # blend Imid into Ihi
-    Thsw = 400 
-    Tdlo = 350
-    Tdhi = 400
-    iThsw = int((Thsw-Tmin)/dT)
-    iTdlo = int((Tdlo-Tmin)/dT)
-    iTdhi = int((Tdhi-Tmin)/dT)
-
-    # calc |dImid/dT - dIhi/dT|
-    dImid = np.zeros(nT)
-    dIhi = np.zeros(nT)
-    for iT in range(nT-1):
-    	dImid[iT] = (Imid[iT+1]-Imid[iT])/dT
-	dIhi[iT]  = (Ihi[iT+1]-Ihi[iT])/dT
-    dslope = np.absolute(dImid-dIhi)[iTdlo:iTdhi]
-    	
-    # minimize |dImid/dT - dIhi/dT| from dlo to dhi
-    iTdmin = np.where(dslope == dslope.min())[0][0] + iTdlo 
-
-    # perform I shift
-    Ishift = Ihi[iTdmin] - Imid[iTdmin]
-    for iT in range(nT):
-        Ihi[iT] -= Ishift
-
-    for iT,T in enumerate(Tvec):
-	Thsw = Tmin+iTdmin*dT
-        I[iT] = Imid[iT]
-        if T > Thsw:
-            I[iT] = Ihi[iT]
-
-    # blend at cut
-    for iT,T in enumerate(Tvec):
-	if T < 600:
-        	I[iT] = Imid[iT] + (1.+np.tanh((T-Thsw)/40))/2.*(Ihi[iT] - Imid[iT])
-
-    # calc second derivative
-    for iT in range(1,nT-1):
-        T = Tmin+iT*dT
-        I2[iT] = (Imid[iT+1]-2.*Imid[iT]+Imid[iT-1])/(dT*dT)
-    #ppl.plot(Tvec,I2)    
+        if T < 120:
+            I[iT] = fI_lo(T)
+        elif T >= 120 and T < 180:
+            I[iT] = fI_lo(T) + (1.+np.tanh((T-150)/5))/2.*(fI_mid(T) - fI_lo(T))
+        elif T >= 180 and T < 500:
+            I[iT] = fI_mid(T) + (1.+np.tanh((T-Tsw)/20))/2.*(fI_hi(T) + fI_mid(Tsw) - fI_hi(Tsw) - fI_mid(T))
+        else:
+            I[iT] = fI_hi(T) + fI_mid(Tsw) - fI_hi(Tsw)     	
 
     # plot that shit!
-    #ppl.plot(Tvec/1000,I)
+    ppl.plot(Tvec/1000,I)
+
+    #dI = interp1d(Tvec, interpolate.splev(Tvec,interpolate.splrep(Tvec,I,s=0),der=2))
+    #ppl.plot(Tvec/1000,dI(Tvec))
 
     # save to text output
     #np.savetxt("realizations/hotqcd-measure/hotqcd-eos-spline_{}.dat".format(ic), np.c_[Tvec,I], fmt='%10.5f')

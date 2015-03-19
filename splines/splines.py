@@ -89,7 +89,7 @@ k1, k4, k2, k3, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16 = np.loadt
 N = k1.size
 
 # loop over splines (range fixed to 1 to test first interaction measure)
-for ic in range(5):
+for ic in range(100):
 
     # initialize basis functions
     B1 = np.zeros(nT)
@@ -185,22 +185,25 @@ for ic in range(5):
     # e output mesh: GeV/fm^3
     emin = 0.1e-2
     emax = 0.310999e3
-    #ne = 155500
-    ne = 100
+    ne = 155500
     de = (emax-emin)/float(ne)
     evec = np.linspace(emin,emax,ne)
 
-    # T output mesh: GeV
+    # T output mesh
     Tinv = []
     for ie0,e0 in enumerate(evec):
         Tinv.append(fminbound(lambda x: abs(fe(x)*(x/1000)**4./(hbarc**3.)-e0),Tmin,Tmax))
     Tinv = np.asarray(Tinv)
 
     # output arrays
-    eEOS = fe(Tinv)*Tinv**4./(hbarc**3.)
-    pEOS = fp(Tinv)*Tinv**4./(hbarc**3.)
-    sEOS = fs(Tinv)*Tinv**3./(hbarc**3.)
-    TEOS = Tinv
+    eEOS = fe(Tinv)*(Tinv/1000)**4./(hbarc**3.)
+    pEOS = fp(Tinv)*(Tinv/1000)**4./(hbarc**3.)
+    sEOS = fs(Tinv)*(Tinv/1000)**3./(hbarc**3.)
+    TEOS = Tinv/1000
+
+    ppl.plot(TEOS,eEOS)
+    ppl.plot(TEOS,pEOS)
+    ppl.plot(TEOS,sEOS)
 
     line = FortranRecordWriter('(4E15.6)')
 
@@ -210,7 +213,7 @@ for ic in range(5):
             wf.write(line.write([eEOS[i],pEOS[i],sEOS[i],TEOS[i]])+"\n")
 
     # plot that shit!
-    ppl.plot(Tvec/1000,p) 
+    #ppl.plot(Tvec/1000,p) 
 
     #dI = interp1d(Tvec, interpolate.splev(Tvec,interpolate.splrep(Tvec,I,s=0),der=2))
     #ppl.plot(Tvec/1000,dI(Tvec))

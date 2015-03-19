@@ -18,13 +18,13 @@ eEOS2, pEOS2, sEOS2, TEOS2 = np.loadtxt("WB-EOS.dat",dtype='float',unpack=True)
 eEOS3, pEOS3, sEOS3, TEOS3 = np.loadtxt("HotQCD-EOS.dat",dtype='float',unpack=True)
 
 # plot HotQCD EOS from table (to check)
-T, I, p, e, s, Cv, cs = np.loadtxt("tables/EOS-table.dat",dtype='float',unpack=True, skiprows=1)
+#T, I, p, e, s, Cv, cs = np.loadtxt("tables/EOS-table.dat",dtype='float',unpack=True, skiprows=1)
 
 # compare energy density
 ppl.plot(TEOS1,eEOS1/TEOS1**4*hbarc**3,'--',linewidth=1.0,color='teal',label="s95-PCE")
 ppl.plot(TEOS2,eEOS2/TEOS2**4*hbarc**3,linewidth=1.0,color='orange',label="BW")
 ppl.plot(TEOS3,eEOS3/TEOS3**4*hbarc**3,linewidth=1.0,color='red',label="HotQCD")
-ppl.plot(T*0.001,e,linewidth=1.0,color='purple',linestyle='--',label="HotQCD tbl")
+#ppl.plot(T*0.001,e,linewidth=1.0,color='purple',linestyle='--',label="HotQCD tbl")
 #ppl.plot(TEOS1,eEOS1,'--',linewidth=1.0,color='teal')
 #ppl.plot(TEOS2,eEOS2,linewidth=1.0,color='orange')
 
@@ -32,7 +32,7 @@ ppl.plot(T*0.001,e,linewidth=1.0,color='purple',linestyle='--',label="HotQCD tbl
 ppl.plot(TEOS1,sEOS1/TEOS1**3*hbarc**3,'--',linewidth=1.0,color='teal')
 ppl.plot(TEOS2,sEOS2/TEOS2**3*hbarc**3,linewidth=1.0,color='orange')
 ppl.plot(TEOS3,sEOS3/TEOS3**3*hbarc**3,linewidth=1.0,color='red')
-ppl.plot(T*0.001,s,linewidth=1.0,color='purple',linestyle='--',label="HotQCD tbl")
+#ppl.plot(T*0.001,s,linewidth=1.0,color='purple',linestyle='--',label="HotQCD tbl")
 #ppl.plot(TEOS1,sEOS1,'--',linewidth=1.0,color='teal')
 #ppl.plot(TEOS2,sEOS2,linewidth=1.0,color='orange')
 
@@ -40,7 +40,7 @@ ppl.plot(T*0.001,s,linewidth=1.0,color='purple',linestyle='--',label="HotQCD tbl
 ppl.plot(TEOS1,pEOS1/TEOS1**4*hbarc**3,'--',linewidth=1.0,color='teal')
 ppl.plot(TEOS2,pEOS2/TEOS2**4*hbarc**3,linewidth=1.0,color='orange')
 ppl.plot(TEOS3,pEOS3/TEOS3**4*hbarc**3,linewidth=1.0,color='red')
-ppl.plot(T*0.001,p,linewidth=1.0,color='purple',linestyle='--',label="HotQCD tbl")
+#ppl.plot(T*0.001,p,linewidth=1.0,color='purple',linestyle='--',label="HotQCD tbl")
 #ppl.plot(TEOS1,pEOS1,'--',linewidth=1.0,color='teal')
 #ppl.plot(TEOS2,pEOS2,linewidth=1.0,color='orange')
 

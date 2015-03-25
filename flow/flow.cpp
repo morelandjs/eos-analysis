@@ -29,18 +29,21 @@ bool RFP(double itype){
 // flow data needed to characterize each event
 struct flowdata
 {
-  complex<double> two;            // <2 >
-  complex<double> two_weight;     // <2 > event weights
-  complex<double> four;           // <4 >
-  complex<double> four_weight;    // <4 > event weights
-  vector<complex<double> > twop;  // <2'>
-  vector<double>  twop_weight;    // <2'> event weights
-  vector<complex<double> > fourp; // <4'>
-  vector<double> fourp_weight;    // <4'> event weights
+  double two;                 // <2 >
+  double two_weight;          // <2 > event weights
+  double four;                // <4 >
+  double four_weight;         // <4 > event weights
+  vector<double> twop;        // <2'>
+  vector<double> twop_weight; // <2'> event weights
+  vector<double> fourp;       // <4'>
+  vector<double> fourp_weight;// <4'> event weights
 };
 
 int main(int argc, char **argv)
-{ 
+{
+  //voodoo speedup
+  cin.sync_with_stdio(false);
+
   // set harmonic to calculate
   double mode = 2.;
 
@@ -71,17 +74,14 @@ int main(int argc, char **argv)
 
       // store particle data
       if(line.length() != 0){
-	istringstream(line) >> ityp0 >> pt0 >> phi0;
-	ityp.push_back(ityp0);
-	pt.push_back(pt0);
-	phi.push_back(phi0);
+	    istringstream(line) >> ityp0 >> pt0 >> phi0;
+	    ityp.push_back(ityp0);
+	    pt.push_back(pt0);
+	    phi.push_back(phi0);
       }
 
     // stop on line skip
     }while(line.length()!= 0);
-
-    // print event status to terminal
-    cerr << "nev: " << nev <<  endl;
 
     // construct Qn and Q2n vectors over all RFP
     double M = 0.0;
@@ -101,8 +101,8 @@ int main(int argc, char **argv)
     event.two_weight = M*(M-1.);
 
     // construct single event <4> vector
-    complex<double> A1 = norm(Qn)*norm(Qn) + norm(Q2n) - 2.*real(Q2n*conj(Qn)*conj(Qn));
-    complex<double> A2 = -2.*(2.*(M-2.)*norm(Qn) - M*(M-3.));
+    double A1 = norm(Qn)*norm(Qn) + norm(Q2n) - 2.*real(Q2n*conj(Qn)*conj(Qn));
+    double A2 = -2.*(2.*(M-2.)*norm(Qn) - M*(M-3.));
     event.four = (A1+A2)/(M*(M-1.)*(M-2.)*(M-3.) + 1e-15);
     event.four_weight = (M*(M-1.)*(M-2.)*(M-3.));
 
@@ -135,15 +135,15 @@ int main(int argc, char **argv)
       }
 
       // record <2'> for each event
-      event.twop.push_back((pn*conj(Qn) - mq)/(mp*M - mq + 1e-15));
+      event.twop.push_back(real((pn*conj(Qn) - mq)/(mp*M - mq + 1e-15)));
       event.twop_weight.push_back(mp*M - mq);
 
       // record <4'> for each event
-      event.fourp.push_back((pn*Qn*conj(Qn)*conj(Qn) - q2n*conj(Qn)*conj(Qn)
+      event.fourp.push_back(real((pn*Qn*conj(Qn)*conj(Qn) - q2n*conj(Qn)*conj(Qn)
        - pn*Qn*conj(Q2n) - 2.*M*pn*conj(Qn) - 2.*mq*norm(Qn) + 7.*qn*conj(Qn)
        - Qn*conj(qn) + q2n*conj(Q2n) + 2.*pn*conj(Qn) + 2.*mq*M - 6.*mq)
-	 /((mp*M-3.*mq)*(M-1.)*(M-2.) + 1e-15));
-      event.fourp_weight.push_back(((mp*M-3.*mq)*(M-1.)*(M-2.)));
+       /((mp*M-3.*mq)*(M-1.)*(M-2.) + 1e-15)));
+      event.fourp_weight.push_back((mp*M-3.*mq)*(M-1.)*(M-2.));
     }
 
     // store the event data to the batch vector
@@ -156,7 +156,7 @@ int main(int argc, char **argv)
   }while(cin); 
 
   // calculate weighted average <<2>> and <<4>> over all events
-  complex<double> num2 = 0.0, denom2 = 0.0, num4 = 0.0, denom4 = 0.0;
+  double num2 = 0.0, denom2 = 0.0, num4 = 0.0, denom4 = 0.0;
   for(int iev=0; iev < nev-1; iev++){
     flowdata event = batch[iev];
     num2 += event.two_weight*event.two;
@@ -166,11 +166,11 @@ int main(int argc, char **argv)
   }
 
   // assign <<2>>, <<4>>, cn{2} and cn{4}
-  complex<double> twoavg = num2/denom2, fouravg = num4/denom4; 
-  complex<double> cn2 = twoavg, cn4 = fouravg - 2.*twoavg*twoavg;  
+  double twoavg = num2/denom2, fouravg = num4/denom4; 
+  double cn2 = twoavg, cn4 = fouravg - 2.*twoavg*twoavg;  
 
   // calculate weighted average <<2'>> and <<4'>> over all events
-  vector<complex<double> > num2p(npt,0.0), num4p(npt,0.0);
+  vector<double> num2p(npt,0.0), num4p(npt,0.0);
   vector<double> denom2p(npt,0.0), denom4p(npt,0.0);
   for(int iev=0; iev < nev-1; iev++){
     flowdata event = batch[iev];
@@ -183,8 +183,8 @@ int main(int argc, char **argv)
   } 
 
   // assign <<2'>>, <<4'>>, dn{2} and dn{4}
-  vector<complex<double> > twopavg(npt,0.0), fourpavg(npt,0.0);
-  vector<complex<double> > dn2(npt,0.0), dn4(npt,0.0);
+  vector<double> twopavg(npt,0.0), fourpavg(npt,0.0);
+  vector<double> dn2(npt,0.0), dn4(npt,0.0);
   for(int ipt=0; ipt<npt; ipt++){
     twopavg[ipt] = num2p[ipt]/denom2p[ipt];
     fourpavg[ipt] = num4p[ipt]/denom4p[ipt];
@@ -338,10 +338,10 @@ int main(int argc, char **argv)
   // diff v_n{2} | diff v_n{2} error | diff v_n{4} | diff v_n{4} error
   for(int ipt=0; ipt<npt; ipt++){
       cout  << left
-	    << fixed << setprecision(6) << setw(14) << real(v2p[ipt])
-	//<< fixed << setprecision(6) << setw(14) << real(v2perr[ipt])
+	        << fixed << setprecision(6) << setw(14) << real(v2p[ipt])
+	        //<< fixed << setprecision(6) << setw(14) << real(v2perr[ipt])
             << fixed << setprecision(6) << setw(14) << real(v4p[ipt]) 
-	//<< fixed << setprecision(6) << setw(14) << real(v4perr[ipt])
+	        //<< fixed << setprecision(6) << setw(14) << real(v4perr[ipt])
             << endl;
   }
 

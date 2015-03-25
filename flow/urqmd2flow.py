@@ -14,7 +14,8 @@ def events():
             py = p[48:71]
             pz = p[72:95]
             ityp = l[218:221]
-            event.append((E, px, py, pz, ityp)) 
+            chg = l[225:227]
+            event.append((E, px, py, pz, ityp, chg)) 
         else:
             if event:
                 yield np.array(event, dtype=float)
@@ -25,10 +26,17 @@ def events():
                             
 
 for event in events():
-    E, px, py, pz, ityp = event.T
-    phi = np.arctan2(py, px)
-    pt = np.sqrt(px**2.+py**2.) 
 
-    for i in zip(phi, pt, ityp):
+    # unpack particle properties
+    E, px, py, pz, ityp, chg = event.T
+    phi = np.arctan2(py, px)
+    p = np.sqrt(px**2.+py**2.+pz**2.)
+    pt = np.sqrt(px**2.+py**2.)
+    eta = 0.5*np.log((p+pz)/(p-pz))
+
+    # cut on rapidity and charge
+    cut = (np.abs(eta) < 0.5) & (chg.astype(int) != 0)
+
+    for i in zip(ityp[cut], pt[cut], phi[cut]):
         print(*i)
     print()

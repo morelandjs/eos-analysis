@@ -13,15 +13,17 @@ using namespace std;
 // bool for POI (particles of interest)
 bool POI(double itype, double pt, double ptmin, double ptmax){
   // set particle ID for POI
-  if(abs(int(itype)) == 101 && ptmin <= pt && pt < ptmax) return true;
+  //if(abs(int(itype)) == 101 && ptmin <= pt && pt < ptmax) return true;
+  if(ptmin <= pt && pt < ptmax) return true;
   else return false;
 }
 
 // bool for RFP (reference frame particles)
 bool RFP(double itype){
   // set particle ID for RFP
-  if(int(itype) == 101) return true;
-  else return false;
+  //if(int(itype) == 101) return true; 
+  //else return false;
+  return true;
 }
 
 // flow data needed to characterize each event
@@ -37,29 +39,23 @@ struct flowdata
   vector<double> fourp_weight;    // <4'> event weights
 };
 
-//###########################################################################
-int main()
+int main(int argc, char **argv)
 { 
   // set harmonic to calculate
-  double mode = 3.;
+  double mode = 2.;
 
   // pt range and step size
-  double ptmin=0.0, ptmax = 2.5, dpt=0.25;
+  double ptmin=0.0, ptmax = 2.0, dpt=0.25;
   int npt = int((ptmax-ptmin)/dpt);
-
-  // open the flow file
-  string line; ifstream infile;   
-  infile.open("tmp/s95-PCE-dflow-20-30.dat");
 
   // initialize vars
   double ityp0, pt0, phi0;
   vector<double> ityp, pt, phi;
   vector<flowdata> batch;
+  int nev = 0;
 
   // loop over events
-  int nev = 0;
   do{
-
     // initialize flowdata event
     flowdata event;
 
@@ -69,12 +65,13 @@ int main()
     phi.clear();
 
     // read event data until line skip
+    string line;
     do{
-      getline(infile,line);
+      getline(cin,line);
 
       // store particle data
       if(line.length() != 0){
-	istringstream(line) >> ityp0 >> phi0 >> pt0;
+	istringstream(line) >> ityp0 >> pt0 >> phi0;
 	ityp.push_back(ityp0);
 	pt.push_back(pt0);
 	phi.push_back(phi0);
@@ -84,15 +81,15 @@ int main()
     }while(line.length()!= 0);
 
     // print event status to terminal
-    cout << "nev: " << nev <<  endl;
+    cerr << "nev: " << nev <<  endl;
 
     // construct Qn and Q2n vectors over all RFP
     double M = 0.0;
     complex<double> Qn(0.0,0.0), Q2n(0.0,0.0);
     for(int i=0; i<ityp.size(); i++){
       if(RFP(ityp[i])){
-	complex<double> dQn(cos(1.*mode*phi[i]),sin(1.*mode*phi[i]));
-	complex<double> dQ2n(cos(2.*mode*phi[i]),sin(2.*mode*phi[i]));
+	complex<double> dQn(cos(mode*phi[i]),sin(mode*phi[i]));
+	complex<double> dQ2n(cos(2*mode*phi[i]),sin(2*mode*phi[i]));
 	Qn += dQn;
 	Q2n += dQ2n;
 	M += 1.;
@@ -122,13 +119,14 @@ int main()
 
 	// construct pn vector over POI
 	if(POI(ityp[i],pt[i],ptlow,pthigh)){
-	  complex<double> dpn(cos(1.*mode*phi[i]),sin(1.*mode*phi[i])); 
+	  complex<double> dpn(cos(mode*phi[i]),sin(mode*phi[i])); 
 	  pn += dpn;
 	  mp += 1.;
 	}
+
 	// construct qn and q2n vectors over POI intersect RFP
 	if(POI(ityp[i],pt[i],ptlow,pthigh) && RFP(ityp[i])){
-	  complex<double> dqn(cos(1.*mode*phi[i]),sin(1.*mode*phi[i])); 
+	  complex<double> dqn(cos(mode*phi[i]),sin(mode*phi[i])); 
 	  complex<double> dq2n(cos(2.*mode*phi[i]),sin(2.*mode*phi[i])); 
 	  qn += dqn;
 	  q2n += dq2n;
@@ -155,12 +153,9 @@ int main()
     nev++;
 
   // end event loop
-  }while(!infile.eof()); 
+  }while(cin); 
 
-  // close the read file
-  infile.close();
-
-  // calculate <<2>> and <<4>> over all events
+  // calculate weighted average <<2>> and <<4>> over all events
   complex<double> num2 = 0.0, denom2 = 0.0, num4 = 0.0, denom4 = 0.0;
   for(int iev=0; iev < nev-1; iev++){
     flowdata event = batch[iev];
@@ -170,10 +165,11 @@ int main()
     denom4 += event.four_weight;
   }
 
-  // return <<2>> and <<4>>
+  // assign <<2>>, <<4>>, cn{2} and cn{4}
   complex<double> twoavg = num2/denom2, fouravg = num4/denom4; 
+  complex<double> cn2 = twoavg, cn4 = fouravg - 2.*twoavg*twoavg;  
 
-  // calculate <<2'>> and <<4'>> over all events
+  // calculate weighted average <<2'>> and <<4'>> over all events
   vector<complex<double> > num2p(npt,0.0), num4p(npt,0.0);
   vector<double> denom2p(npt,0.0), denom4p(npt,0.0);
   for(int iev=0; iev < nev-1; iev++){
@@ -186,15 +182,28 @@ int main()
     }
   } 
 
-  // return <<2'>> and <<4'>>
+  // assign <<2'>>, <<4'>>, dn{2} and dn{4}
   vector<complex<double> > twopavg(npt,0.0), fourpavg(npt,0.0);
+  vector<complex<double> > dn2(npt,0.0), dn4(npt,0.0);
   for(int ipt=0; ipt<npt; ipt++){
     twopavg[ipt] = num2p[ipt]/denom2p[ipt];
     fourpavg[ipt] = num4p[ipt]/denom4p[ipt];
+    dn2[ipt] = twopavg[ipt];
+    dn4[ipt] = fourpavg[ipt] - 2.*twopavg[ipt]*twoavg;
   }
 
-  // ERROR TERMS
+  // calc vn{2} and vn{4}
+  complex<double> v2 = sqrt(cn2), v4 = pow(-cn4,0.25);
 
+  // calculate vn'{2} and vn'{4}
+  vector<complex<double> > v2p(npt,0.0), v4p(npt,0.0);
+  for(int ipt=0; ipt<npt; ipt++){
+    v2p[ipt] = dn2[ipt]/sqrt(cn2);
+    v4p[ipt] = -dn4[ipt]/pow(-cn4,0.75);
+  }
+
+  //#############################################################################################
+  /*
   // weight error terms
   complex<double>  W2=0.0, W2sq=0.0, W4=0.0, W4sq=0.0, W2W4=0.0;
   vector<complex<double> > W2p(npt,0.0), W2psq(npt,0.0), W4p(npt,0.0), W4psq(npt,0.0);
@@ -278,21 +287,12 @@ int main()
     cov2p4p[ipt] = (W2pW4ptwopfourp[ipt]/W2pW4p[ipt]-W2ptwop[ipt]*W4pfourp[ipt]/(W2p[ipt]*W4p[ipt]))/(1.-W2pW4p[ipt]/(W2p[ipt]*W4p[ipt]));
   }
 
-  // calc v{2} and v{4}
-  complex<double> v2 = sqrt(twoavg);
-  complex<double> v4 = pow(2.*twoavg*twoavg-fouravg,1./4.);
-
   // v{2} and v{4} errors
   complex<double> v2err = sqrt((1./(4.*twoavg))*W2sq/(W2*W2)*s2sq);
   complex<double> v4err = sqrt(pow(2.*twoavg*twoavg-fouravg,-3./2.)*(twoavg*twoavg*(W2sq/(W2*W2))*s2sq
 			       + (1./16.)*(W4sq/(W4*W4))*s4sq-(1./2.)*twoavg*(W2W4/(W2*W4))*cov24));
 
-  // calculate v'{2} and v'{4}
-  vector<complex<double> > v2p(npt,0.0), v4p(npt,0.0);
-  for(int ipt=0; ipt<npt; ipt++){
-    v2p[ipt] = twopavg[ipt]/sqrt(twoavg);
-    v4p[ipt] = -(fourpavg[ipt]-2.*twopavg[ipt]*twoavg)/pow(2.*twoavg*twoavg-fouravg,3./4.);
-  }
+
 
   // calculate v'{2} and v'{4} errors
   vector<complex<double> > v2perr(npt,0.0), v4perr(npt,0.0);
@@ -313,27 +313,37 @@ int main()
                       *(2.*twoavg*twopavg[ipt]-fourpavg[ipt])*(W2pW4[ipt]/(W2p[ipt]*W4))*cov2p4[ipt]-(3./2.)
                       *(2.*twoavg*twoavg-fouravg)*(2.*twoavg*twopavg[ipt]-fourpavg[ipt])*(W4W4p[ipt]/(W4*W4p[ipt]))*cov44p[ipt]
                       -4.*twoavg*pow(2.*twoavg*twoavg-fouravg,2.)*(W2pW4p[ipt]/(W2p[ipt]*W4p[ipt]))*cov2p4p[ipt])); 
-  }
+		      }*/
 
-  // open results file
-  ofstream outfile;
-  outfile.open("results/s95-PCE-pions-20-30.dat",std::ios_base::trunc);
+  //#####################################################################################################################
 
-  // print results to file
-  for(int ipt=0; ipt<npt; ipt++){
-    outfile << setprecision(12) << setw(22) << ptmin+ipt*dpt+dpt/2. 
-	    << setprecision(12) << setw(22) << sqrt(norm(v2p[ipt]))
-            << setprecision(12) << setw(22) << sqrt(norm(v2perr[ipt]))
-	    << setprecision(12) << setw(22) << sqrt(norm(v4p[ipt])) 
-            << setprecision(12) << setw(22) << sqrt(norm(v4perr[ipt])) << endl;
-  }
+  // print header
+  /*  cout << left
+       << "#harmonic: n= " << mode << ", first row integrated, subsequent differential" << endl
+       << fixed << setprecision(6) << setw(14) << "#vn{2}"
+       << fixed << setprecision(6) << setw(14) << "vn{2} err"
+       << fixed << setprecision(6) << setw(14) << "vn{4}"
+       << fixed << setprecision(6) << setw(14) << "vn{4} err"
+       << endl;*/
 
-  // print v{2} and v{4} integrated to terminal with errors
-  cout << "v{2}: " << "\t" << sqrt(norm(v2)) << "\t" <<  sqrt(norm(v2err)) << endl;
-  cout << "v{4}: " << "\t" << sqrt(norm(v4)) << "\t" <<  sqrt(norm(v4err)) << endl;
   
-  // close the print file
-  outfile.close();
+  // v_n{2} | v_n{2} error | v_n{4} | v_n{4} error
+  cout << left
+       << fixed << setprecision(6) << setw(14) << real(v2)
+       //<< fixed << setprecision(6) << setw(14) << sqrt(norm(v2err))
+       << fixed << setprecision(6) << setw(14) << real(v4)
+       //<< fixed << setprecision(6) << setw(14) << sqrt(norm(v4err))
+       << endl;
+
+  // diff v_n{2} | diff v_n{2} error | diff v_n{4} | diff v_n{4} error
+  for(int ipt=0; ipt<npt; ipt++){
+      cout  << left
+	    << fixed << setprecision(6) << setw(14) << real(v2p[ipt])
+	//<< fixed << setprecision(6) << setw(14) << real(v2perr[ipt])
+            << fixed << setprecision(6) << setw(14) << real(v4p[ipt]) 
+	//<< fixed << setprecision(6) << setw(14) << real(v4perr[ipt])
+            << endl;
+  }
 
   return 1;
 }

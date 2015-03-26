@@ -72,11 +72,15 @@ int main(int argc, char **argv)
 
     // read event data until line skip
     string line;
+    bool header = true;
     do{
       getline(cin,line);
 
       // store particle data
       if(line.length() == 434){
+
+	  // enter UrQMD event body
+	  header = false;
 
           // read from UrQMD
 	  double ityp0 = stod(line.substr(217, 4));
@@ -97,8 +101,10 @@ int main(int argc, char **argv)
 	  }
       }
 
-    // stop on line skip
-    }while(line.length() != 0);
+    // stop once a new header is encountered
+    }while(header || line.length()==434);
+
+    cout << "event ended" << endl;
 
     // construct Qn and Q2n vectors over all RFP
     double M = 0.0;

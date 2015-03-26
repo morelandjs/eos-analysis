@@ -47,8 +47,11 @@ int main(int argc, char **argv)
   // set harmonic to calculate
   double mode = 2.;
 
+  // pseudo-rapidity cuts
+  double eta_min = -0.5, eta_max = 0.5;
+
   // pt range and step size
-  double ptmin=0.0, ptmax = 2.0, dpt=0.25;
+  double ptmin=0.0, ptmax = 2.5, dpt=0.25;
   int npt = int((ptmax-ptmin)/dpt);
 
   // initialize vars
@@ -73,15 +76,29 @@ int main(int argc, char **argv)
       getline(cin,line);
 
       // store particle data
-      if(line.length() != 0){
-	    istringstream(line) >> ityp0 >> pt0 >> phi0;
-	    ityp.push_back(ityp0);
-	    pt.push_back(pt0);
-	    phi.push_back(phi0);
+      if(line.length() == 434){
+
+          // read from UrQMD
+	  double ityp0 = stod(line.substr(217, 4));
+	  int chg = stoi(line.substr(225, 2));
+	  double px = stod(line.substr(121, 23));
+	  double py = stod(line.substr(145, 23));
+	  double pz = stod(line.substr(169, 23));
+	  double p = sqrt(px*px + py*py + pz*pz);
+	  double eta = 0.5*log((p+pz)/(p-pz));
+
+	  //istringstream(line) >> ityp0 >> pt0 >> phi0;
+	  if((eta_min < eta) && (eta < eta_max) && (chg != 0)){
+	      ityp.push_back(ityp0);
+	      pt.push_back(sqrt(px*px+py*py));
+	      phi.push_back(atan2(py,px));
+
+	      cout << ityp0 << "\t" << sqrt(px*px+py*py) << "\t" << atan2(py,px) << endl;
+	  }
       }
 
     // stop on line skip
-    }while(line.length()!= 0);
+    }while(line.length() != 0);
 
     // construct Qn and Q2n vectors over all RFP
     double M = 0.0;

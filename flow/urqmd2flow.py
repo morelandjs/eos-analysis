@@ -3,11 +3,11 @@
 import numpy as np
 import sys
 
-
+# event generator
 def events():
     event = []
     for l in sys.stdin.buffer:
-        if len(l) > 200: 
+        if len(l) == 434: 
             p = l[97:192].replace(b'D', b'E')
             E = p[0:23]
             px = p[24:47]
@@ -23,8 +23,8 @@ def events():
 
     if event: 
         yield np.array(event, dtype=float)
-                            
-
+             
+# loop over hydro events and urqmd oversamples
 for event in events():
 
     # unpack particle properties

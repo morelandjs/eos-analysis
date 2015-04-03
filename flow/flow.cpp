@@ -16,7 +16,7 @@ using namespace std;
 // bool for POI (particles of interest)
 bool POI(int typ, double pt, double ptmin, double ptmax){
   
-    bool isPOI = //(typ == 101) && 
+    bool isPOI = //(abs(typ) == 101) && 
                  (ptmin < pt) && (pt < ptmax);
     
     return isPOI;

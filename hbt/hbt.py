@@ -12,7 +12,7 @@ def boost_z(p, beta_z):
     px_ = px
     py_ = py
     pz_ = gamma*(pz - beta_z*E)
-    return E_, px_, py_, pz_
+    return np.array(E_, px_, py_, pz_)
 
 
 # event generator
@@ -28,7 +28,7 @@ def events():
             ityp = l[218:221]
             chg = l[225:227]
             if int(chg) != 0 and int(ityp) == 101:
-                event.append((E, px, py, pz)) 
+                event.append((t, x, y, z, E, px, py, pz)) 
         else:
             if event:
                 yield np.array(event, dtype=float)
@@ -38,22 +38,32 @@ def events():
         yield np.array(event, dtype=float)
                             
 # loop over all hydro events and urqmd oversamples
-for pvec in events():
+for particles in events():
 
-    # unpack p vectors
+    # unpack particle data
+    pvec = particles[5:8]
     E, px, py, pz = pvec.T
 
     # calculate pseudorapidity
     p = np.sqrt(np.square(pvec).sum(axis=1))
     eta = 0.5*np.log((p+pz)/(p-pz))
 
-    # get all p1, p2 momentum pairs
-    for p1, p2 in itertools.combinations(pvec,2):
+    # get all p1, p2 momentum pairs from same event
+    for particle_1, particle_2 in itertools.combinations(particles,2):
+
+	# unpack pair coordinates
+	x1 = np.array(particle_1[0:4])
+	x2 = np.array(particle_2[0:4])
+	dx = (x2 - x1)[1:4]
+
+	# unpack pair momenta
+	p1 = np.array(particle_1[5:9])
+	p2 = np.array(particle_2[5:9])
 
         # boost into longitudinal co-moving frame
         beta_z = (p1[3] + p2[3])/(p1[0] + p2[0])
-        p1 = np.array(boost_z(p1, beta_z))[1:]
-        p2 = np.array(boost_z(p2, beta_z))[1:]
+        p1 = boost_z(p1, beta_z)[1:]
+        p2 = boost_z(p2, beta_z)[1:]
 
         # calculate q and k vectors
         q = p2 - p1
@@ -68,5 +78,5 @@ for pvec in events():
         qs = q - qo - ql
 
         # add up same event correlations
-        Csame[iqo,iqs,iql,ikt] += 1  
+        C[iqo,iqs,iql,ikt] += 1 + np.cos(np.dot(q.T,dx)) 
 

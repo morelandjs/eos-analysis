@@ -9,11 +9,11 @@ using namespace std;
 urqmd_reader::urqmd_reader(char filename[]){
 
     // open the file
-    fstream event; event.open(filename);
+    ifstream event(filename, ifstream::in);
     string line;
 
     // read particles from the event
-    while(getline(event, line)){
+    while(getline(event,line)){        
 
         // skip headers
         if(line.length() != 434) continue;
@@ -46,10 +46,8 @@ urqmd_reader::urqmd_reader(char filename[]){
         vector<double> x = {t_, x_, y_, z_};
         vector<double> p = {e_, px_, py_, pz_};
 
-        cout << e_ << px_ << py_ << pz_ << endl;
         // add particle to list
         xlist.push_back(x);
         plist.push_back(p);
     }
-    event.close();
 }

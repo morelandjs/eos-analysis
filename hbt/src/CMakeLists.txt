@@ -1,11 +1,6 @@
-# cmake version
-cmake_minimum_required(VERSION 2.8)
-
-# project name
-project(hbt)
-
-# compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++11 -march=native")
 
 # build
 add_executable(hbt hbt.cpp urqmd_reader.cpp)
+
+# link libraries
+target_link_libraries(hbt libhdf5.so libhdf5_cpp.so)

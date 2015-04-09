@@ -2,18 +2,27 @@
 #include <iostream>
 #include <cmath>
 #include <algorithm>
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
 #include "urqmd_reader.h"
 
 using namespace std;
 
-urqmd_reader::urqmd_reader(char filename[]){
+urqmd_reader::urqmd_reader(const char* filename){
 
-    // open the file
-    ifstream event(filename, ifstream::in);
+    // read from gzipped file
+    ifstream file(filename, ios_base::in | ios_base::binary);
+    boost::iostreams::filtering_istreambuf inbuf;
+    inbuf.push(boost::iostreams::gzip_decompressor());
+    inbuf.push(file);
+ 
+    //Convert streambuf to istream
+    std::istream event(&inbuf);
     string line;
 
     // read particles from the event
-    while(getline(event,line)){        
+    while(getline(event,line)){   
 
         // skip headers
         if(line.length() != 434) continue;

@@ -1,7 +1,10 @@
 #include "urqmd_reader.h"
 #include <iostream>
+#include <stdio.h>
+#include <string>
 #include <cmath>
 #include <algorithm>
+#include "boost/filesystem.hpp"
 #include "boost/multi_array.hpp"
 #include "H5Cpp.h"
 using namespace std;
@@ -57,9 +60,20 @@ int main(int argc, char **argv)
     boost::multi_array<double, 4> Cmixed(boost::extents[nkt][nqo][nqs][nql]);
     double n_same = 0, n_mixed = 0;
 
-    // read particle data for two events
-    urqmd_reader event1(argv[1]);
-    urqmd_reader event2(argv[2]);
+    // convert argv to string
+    string path = argv[1], file1 = argv[2], file2 = argv[3], writepath = argv[4];
+
+    // open and read urqmd events
+    string file1_path = path + file1 + ".gz";
+    string file2_path = path + file2 + ".gz"; 
+    urqmd_reader event1(file1_path.c_str());
+    urqmd_reader event2(file2_path.c_str());
+
+    // create output directories
+    string same_dir = writepath + "/same/";
+    string mixed_dir = writepath + "/mixed/";
+    boost::filesystem::create_directories(same_dir);
+    boost::filesystem::create_directories(mixed_dir);
 
     // retrieve particle data
     vector<vector<double>> x1v = event1.get_xlist(), p1v = event1.get_plist();
@@ -180,8 +194,16 @@ int main(int argc, char **argv)
         }
     }
 
-    // write Csame and Cmixed to hdf5 files 
-    write_correlations(Csame, "csame.hd5");
-    write_correlations(Cmixed, "cmixed.hd5");
+    // file paths
+    char path_same[1024], path_mixed[1024];
+    string same = same_dir + "%s.hd5";
+    string mixed = mixed_dir + "%s.hd5";
+    sprintf(path_same, same.c_str(), file1.c_str());
+    sprintf(path_mixed, mixed.c_str(), file1.c_str());
+
+    // write files
+    write_correlations(Csame, path_same);
+    write_correlations(Cmixed, path_mixed);
+
     return 0;
 }

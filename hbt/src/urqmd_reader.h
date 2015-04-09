@@ -11,7 +11,7 @@ class urqmd_reader
         vector<vector<double>> xlist;
         vector<vector<double>> plist;
     public:
-        urqmd_reader(char filename[]);
+        urqmd_reader(const char* filename);
         vector<vector<double>> get_xlist(){return xlist;}
         vector<vector<double>> get_plist(){return plist;}
 };

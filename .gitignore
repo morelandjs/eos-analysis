@@ -4,5 +4,7 @@
 *.gz
 *.tar
 *.dat
+*.hd5
+*.pdf
 data/
 

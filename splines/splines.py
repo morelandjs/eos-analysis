@@ -1,11 +1,15 @@
 #!/usr/bin/env python
-import numpy as np
-import scipy 
+
+from __future__ import division, print_function, unicode_literals
+
+import functools
 import matplotlib.pyplot as plt
-import prettyplotlib as ppl
+import matplotlib.ticker as tick
+from matplotlib import cm
+import numpy as np
+import scipy
 import fortranformat as ff
 from fortranformat import FortranRecordWriter
-from prettyplotlib import brewer2mpl
 from scipy import interpolate
 from scipy.interpolate import interp1d
 from scipy.interpolate import UnivariateSpline
@@ -13,6 +17,55 @@ from scipy.optimize import fminbound
 from scipy import integrate
 from scipy.integrate import quad
 
+# figure properties
+aspect = 1/1.618
+resolution = 72.27
+columnwidth = 246/resolution
+textwidth = 510/resolution
+textiny, texsmall, texnormal = 8., 9.25, 10.
+offblack = '#262626'
+
+plt.rcdefaults()
+plt.rcParams.update({
+        'font.family': ['CMU Serif'],
+        'font.size': texsmall,
+        'legend.fontsize': 8.5,
+        'axes.labelsize': texsmall,
+        'axes.titlesize': texsmall,
+        'xtick.labelsize': textiny,
+        'ytick.labelsize': textiny,
+        'lines.linewidth': .9,
+        'patch.linewidth': .9,
+        'axes.linewidth': .5,
+        'text.color': offblack,
+        'axes.edgecolor': offblack,
+        'axes.labelcolor': offblack,
+        'xtick.color': offblack,
+        'ytick.color': offblack,
+        'xtick.major.size': 2,
+        'ytick.major.size': 2,
+        'xtick.major.pad': 1.8,
+        'ytick.major.pad': 1.8,
+        'legend.numpoints': 1,
+        'legend.scatterpoints': 1,
+        'legend.frameon': False,
+        'pdf.fonttype': 42
+})
+
+def despine(ax=None, remove_ticks=False):
+    if ax is None:
+        ax = plt.gca()
+    for spine in 'top', 'right':
+        ax.spines[spine].set_visible(False)
+    if remove_ticks:
+        for ax_name in 'xaxis', 'yaxis':
+            getattr(ax, ax_name).set_ticks_position('none')
+    else:
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
+
+fig = plt.figure(figsize=(columnwidth, columnwidth*aspect))
+ax = fig.gca()
 ####################################################################################
 
 # construct low temperature interaction measure 
@@ -23,15 +76,14 @@ from scipy.integrate import quad
 T, I, e, p, Cs = np.loadtxt("hrg-eos/hrg-urqmd-eos.dat",dtype='float',unpack=True,skiprows=1)
 fI_lo = interp1d(T, I, kind='cubic')
 
-#T = np.linspace(5,200,100)
-#ppl.plot(T/1000,fI_lo(T),'--',color='orange',linewidth=3.0,zorder = 301, label="HRG UrQMD partial reson")
+T = np.linspace(5,200,100)
+plt.plot(T/1000,fI_lo(T),'--',color='orange',linewidth=2.0,zorder = 301, label="UrQMD partial reson.")
 ####################################################################################
 
 # construct high temperature interaction measure
  
-#T,I,p,e,s,cv,cs = np.loadtxt("hotqcd-eos/EOS-table.txt",dtype='float',unpack=True,skiprows=1)
-#T = np.linspace(65,800,1000)
-#ppl.plot(T/1000,I,color="red",linewidth=3.0,zorder = 100, label="HotQCD continuum extr.")
+T,I,p,e,s,cv,cs = np.loadtxt("hotqcd-eos/EOS-table.txt",dtype='float',unpack=True,skiprows=1)
+#plt.plot(T/1000,I,color="red",linewidth=2.0,zorder = 100, label="HotQCD")
 
 # temperature limits [GeV]
 Tmin = 0.065
@@ -68,8 +120,8 @@ for iT in T:
 fI_hi = interp1d(T*1000, I, kind='cubic')
 
 # plot HotQCD trace anomaly))
-#T = np.linspace(130,800,1000)
-#ppl.plot(T/1000,fI_hi(T),color="blue",linewidth=3.0,zorder = 99,label="HotQCD parameterization")
+T = np.linspace(130,800,1000)
+plt.plot(T/1000,fI_hi(T),color='red',linewidth=2.0,zorder = 99, label="HotQCD param.")
 
 #########################################################################################################################
 
@@ -89,7 +141,7 @@ k1, k4, k2, k3, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16 = np.loadt
 N = k1.size
 
 # loop over splines (range fixed to 1 to test first interaction measure)
-for ic in range(100):
+for ic in range(5):
 
     # initialize basis functions
     B1 = np.zeros(nT)
@@ -156,7 +208,8 @@ for ic in range(100):
             I[iT] = fI_hi(T) + shift  
 
     fI = interp1d(Tvec,I)   	            
-    
+    plt.plot(Tvec/1000,fI(Tvec), color=plt.cm.Blues(0.7), alpha=0.5)
+
     # calculate p/T**4 from interaction measure
     p = []
     integral = 0.0
@@ -177,10 +230,10 @@ for ic in range(100):
         s.append(e[iT] + p[iT])
     fs = interp1d(Tvec,s)
 
-    ppl.plot(Tvec,e,label="energy")
-    ppl.plot(Tvec,p,label="pressure")
-    ppl.plot(Tvec,s,label="entropy")
-    #continue   
+    #plt.plot(Tvec,e,label="energy")
+    #plt.plot(Tvec,p,label="pressure")
+    #plt.plot(Tvec,s,label="entropy")
+    continue   
 
     # e output mesh: GeV/fm^3
     emin = 0.1e-2
@@ -201,9 +254,9 @@ for ic in range(100):
     sEOS = fs(Tinv)*(Tinv/1000)**3./(hbarc**3.)
     TEOS = Tinv/1000
 
-    ppl.plot(TEOS,eEOS)
-    ppl.plot(TEOS,pEOS)
-    ppl.plot(TEOS,sEOS)
+    #plt.plot(TEOS,eEOS)
+    #plt.plot(TEOS,pEOS)
+    #plt.plot(TEOS,sEOS)
 
     line = FortranRecordWriter('(4E15.6)')
 
@@ -213,10 +266,10 @@ for ic in range(100):
             wf.write(line.write([eEOS[i],pEOS[i],sEOS[i],TEOS[i]])+"\n")
 
     # plot that shit!
-    #ppl.plot(Tvec/1000,p) 
+    #plt.plot(Tvec/1000,p) 
 
     #dI = interp1d(Tvec, interpolate.splev(Tvec,interpolate.splrep(Tvec,I,s=0),der=2))
-    #ppl.plot(Tvec/1000,dI(Tvec))
+    #plt.plot(Tvec/1000,dI(Tvec))
 
     # save to text output
     #np.savetxt("realizations/hotqcd-measure/hotqcd-eos-spline_{}.dat".format(ic), np.c_[Tvec,I], fmt='%10.5f')
@@ -237,9 +290,12 @@ for ic in range(100):
 
 
 # plot properties
-#plt.xlim([0.0,0.8])
-#plt.ylim([0.0,5.0])
+despine(ax)
+plt.xlim([0.0,0.8])
+plt.ylim([0.0,5.0])
 plt.xlabel("$T$ [GeV]")
 plt.ylabel("$(e-3p)/T^4$")
-plt.legend(loc='upper right', fontsize=17, frameon=False)
+plt.legend(loc='upper right', frameon=False)
+plt.tight_layout(pad=0, w_pad=.1)
+plt.savefig("splines.pdf")
 plt.show()

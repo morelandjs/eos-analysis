@@ -5,6 +5,7 @@ import fortranformat as ff
 from fortranformat import FortranRecordWriter
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
+from scipy.optimize import fminbound
 from scipy import integrate
 from scipy.integrate import quad
 
@@ -13,8 +14,8 @@ hbarc = 0.19733
 
 # temperature limits in GeV
 T0 = 0.2
-Tmin = 0.001
-Tmax = 1.0
+Tmin = 0.065
+Tmax = 0.800
 dT = 0.005
 nT = int((Tmax-Tmin)/dT)
 Tvec = np.linspace(Tmin,Tmax,nT)
@@ -54,28 +55,7 @@ for iT in range(nT):
     T = Tmin + iT*dT;
     s.append(e[iT]+p[iT])
 s = np.asarray(s)
-fs = interp1d(Tvec, s, kind='cubic')
-
-# convert energy density to temperature
-def e2T(e):
-    counts = 0
-    error = 1.0
-    Tlb = Tmin
-    Tub = Tmax
-    Tmid = (Tub+Tlb)/2.
-
-    while error > 1e-12: 
-        e0 = fe(Tmid)*Tmid**4./hbarc**3;
-        if counts > 50:
-            print "error excessive bisections: ",counts
-        if e0 > e:
-            Tub = Tmid
-        if e0 <= e:
-            Tlb = Tmid
-        Tmid = (Tub+Tlb)/2.
-        error = np.abs((e0-e)/e)
-        counts += 1
-    return Tmid    
+fs = interp1d(Tvec, s, kind='cubic')   
 
 # e output mesh: GeV/fm^3
 emin = 0.1e-2
@@ -84,18 +64,10 @@ ne = 155500
 de = (emax-emin)/float(ne)
 evec = np.linspace(emin,emax,ne)
 
-# T output mesh: GeV
+# T output mesh
 Tinv = []
-printed = False
-for en in evec:
-    Tinv.append(e2T(en))
-    prog = int(en/emax*100)
-    if prog % 5 == 0:
-        if printed == False:
-            print prog,"%"
-        printed = True
-    if prog % 5 != 0:
-        printed = False
+for ie0, e0 in enumerate(evec):
+    Tinv.append(fminbound(lambda x: abs(fe(x)*(x**4.)/(hbarc**3.)-e0),Tmin,Tmax))
 Tinv = np.asarray(Tinv)
 
 # plot curves

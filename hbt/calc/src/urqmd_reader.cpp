@@ -23,7 +23,7 @@ urqmd_reader::urqmd_reader(const char* filename){
 
     // read particles from the event
     while(getline(event,line)){   
-
+    
         // skip headers
         if(line.length() != 434) continue;
         replace(line.begin(), line.end(), 'D', 'E');
@@ -49,8 +49,8 @@ urqmd_reader::urqmd_reader(const char* filename){
         double eta_ = 0.5*log((p_ + pz_)/(p_ - pz_));
 
         // apply particle cuts
-        if(typ_ != 101 || abs(eta_) > 2.0) continue;
-
+        if(typ_ != 101 || abs(eta_) > 1.5 || chg_ == 0) continue;
+        
         // store four-position and four-momentum
         vector<double> x = {t_, x_, y_, z_};
         vector<double> p = {e_, px_, py_, pz_};

@@ -1,7 +1,0 @@
-#!/usr/bin/bash
-source_path=$1
-dest_path=$2
-
-#nev=$(ls $source_path/* | wc -l)
-nev=200
-parallel --gnu --progress --xapply ./build/src/hbt $source_path {} $dest_path ::: $(seq 0 $((nev - 1))) ::: $(seq 0 $((nev - 1)) | shuf)

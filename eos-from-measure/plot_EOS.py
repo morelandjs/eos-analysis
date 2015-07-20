@@ -59,71 +59,45 @@ def despine(ax=None, remove_ticks=False):
         ax.xaxis.set_ticks_position('bottom')
         ax.yaxis.set_ticks_position('left')
 
-fig = plt.figure(figsize=(columnwidth, columnwidth*aspect))
+fig = plt.figure(figsize=(1.3*columnwidth, columnwidth*aspect))
 ax = fig.gca()
 
-blue = plt.cm.Blues(0.6)
-green = plt.cm.Greens(0.4)
-red = plt.cm.Reds(0.5)
+blue = '#3399FF'
+magenta = '#B8008A'
+orange = '#FF9900'
 
 # hbarc
 hbarc = 0.19733
 
-# plot s95-PCE EOS
+# loa s95, HotQCD and WB equations of state
 eEOS1, pEOS1, sEOS1, TEOS1 = np.loadtxt("s95-PCE-EOS.dat",dtype='float',unpack=True)
-
-# plot WB EOS
-eEOS2, pEOS2, sEOS2, TEOS2 = np.loadtxt("WB-EOS.dat",dtype='float',unpack=True)
-
-# plot HotQCD EOS
-eEOS3, pEOS3, sEOS3, TEOS3 = np.loadtxt("HotQCD-EOS.dat",dtype='float',unpack=True)
-
-# plot HotQCD EOS from table (to check)
-#T, I, p, e, s, Cv, cs = np.loadtxt("tables/EOS-table.dat",dtype='float',unpack=True, skiprows=1)
+eEOS2, pEOS2, sEOS2, TEOS2 = np.loadtxt("HotQCD-EOS.dat",dtype='float',unpack=True)
+eEOS3, pEOS3, sEOS3, TEOS3 = np.loadtxt("WB-EOS.dat",dtype='float',unpack=True)
 
 # compare energy density
-plt.plot(TEOS1,eEOS1/TEOS1**4*hbarc**3, dashes = (5,2), linewidth=0.75, color=blue, label="s95-PCE")
-plt.plot(TEOS2,eEOS2/TEOS2**4*hbarc**3, linewidth=0.75, color=green, label="BW")
-plt.plot(TEOS3,eEOS3/TEOS3**4*hbarc**3, dashes = (20,2,5,2), linewidth=0.75, color=red,label="HotQCD")
-#plt.plot(T*0.001,e,linewidth=1.0,color='purple',linestyle='--',label="HotQCD tbl")
-#plt.plot(TEOS1,eEOS1,'--',linewidth=1.0,color='teal')
-#plt.plot(TEOS2,eEOS2,linewidth=1.0,color='orange')
+plt.plot(TEOS1, eEOS1/TEOS1**4*hbarc**3, linewidth=0.75, color=blue, label="S95", zorder=3)
+plt.plot(TEOS2[0:155500], eEOS2[0:155500]/TEOS2[0:155500]**4*hbarc**3, linewidth=0.75, color=magenta, label="HotQCD", zorder=2)
+plt.plot(TEOS3[0:155500], eEOS3[0:155500]/TEOS3[0:155500]**4*hbarc**3, linewidth=0.75, color=orange,label="WB", zorder=1)
 
 # compare entropy density
-plt.plot(TEOS1,sEOS1/TEOS1**3*hbarc**3, dashes = (5,2), linewidth=0.75, color=blue)
-plt.plot(TEOS2,sEOS2/TEOS2**3*hbarc**3, linewidth=0.75, color=green)
-plt.plot(TEOS3,sEOS3/TEOS3**3*hbarc**3, dashes = (20,2,5,2), linewidth=0.75, color=red)
-#plt.plot(T*0.001,s,linewidth=1.0,color='purple',linestyle='--',label="HotQCD tbl")
-#plt.plot(TEOS1,sEOS1,'--',linewidth=1.0,color='teal')
-#plt.plot(TEOS2,sEOS2,linewidth=1.0,color='orange')
+plt.plot(TEOS1,sEOS1/TEOS1**3*hbarc**3, linewidth=0.75, color=blue, zorder=3)
+plt.plot(TEOS2[0:155500], sEOS2[0:155500]/TEOS2[0:155500]**3*hbarc**3, linewidth=0.75, color=magenta, zorder=2)
+plt.plot(TEOS3[0:155500], sEOS3[0:155500]/TEOS3[0:155500]**3*hbarc**3, linewidth=0.75, color=orange, zorder=1)
 
 # compare pressure
-plt.plot(TEOS1,pEOS1/TEOS1**4*hbarc**3, dashes = (5,2), linewidth=0.75, color=blue)
-plt.plot(TEOS2,pEOS2/TEOS2**4*hbarc**3, linewidth=0.75, color=green)
-plt.plot(TEOS3,pEOS3/TEOS3**4*hbarc**3, dashes = (20,2,5,2), linewidth=0.75, color=red)
-#plt.plot(T*0.001,p,linewidth=1.0,color='purple',linestyle='--',label="HotQCD tbl")
-#plt.plot(TEOS1,pEOS1,'--',linewidth=1.0,color='teal')
-#plt.plot(TEOS2,pEOS2,linewidth=1.0,color='orange')
+plt.plot(TEOS1,pEOS1/TEOS1**4*hbarc**3, linewidth=0.75, color=blue, zorder=3)
+plt.plot(TEOS2[0:155500], pEOS2[0:155500]/TEOS2[0:155500]**4*hbarc**3, linewidth=0.75, color=magenta, zorder=2)
+plt.plot(TEOS3[0:155500], pEOS3[0:155500]/TEOS3[0:155500]**4*hbarc**3, linewidth=0.75, color=orange, zorder=1)
 
-#plt.plot(eEOS2,TEOS2,linewidth=1.0,color='orange')
-#plt.plot(eEOS2,sEOS2,linewidth=1.0,color='orange')
-#plt.plot(eEOS2,pEOS2,linewidth=1.0,color='orange')
 
-#plt.legend(loc='upper right')
 plt.xlim(0.0, 0.75)
 plt.ylim(0.0, 24.0)
 plt.xlabel('$T$ [GeV]', fontsize=texnormal)
 plt.ylabel('')
-#plt.title('Trace Anomaly')
-#plt.savefig("trace.pdf")
-#plt.yscale('log')
-plt.legend(bbox_to_anchor=(1.02, 1.05), ncol=3, fontsize=texnormal)
+plt.legend(bbox_to_anchor=(0.91, 1.05), ncol=3, handlelength=2.9, fontsize=texnormal)
 plt.annotate('$s/T^3$', xy=(0.9, 0.775), xycoords='axes fraction',fontsize=texnormal)
 plt.annotate('$e/T^4$', xy=(0.9, 0.575), xycoords='axes fraction',fontsize=texnormal)
 plt.annotate('$p/T^4$', xy=(0.9, 0.175), xycoords='axes fraction',fontsize=texnormal)
-#plt.annotate('dashed: VISHNU', xy=(0.45, 0.675), xycoords='axes fraction',fontsize=15,color='gray')
-#plt.annotate('solid orange: WB', xy=(0.45, 0.575), xycoords='axes fraction',fontsize=15,color='gray')
-#plt.annotate('solid red: WB', xy=(0.45, 0.475), xycoords='axes fraction',fontsize=15,color='gray')
 despine()
 plt.tight_layout(pad=0, w_pad=.1)
 plt.savefig("eos_comparison.pdf")

@@ -34,8 +34,12 @@ def events(filename):
 
 
 # specify EOS folder, e.g. path/HotQCD-errors/, path/HotQCD, path/s95-PCE, etc
-for centrality in "/0to10/", "/20to30/", "/40to50/":
-    
+#for centrality in "/0to5/", "/20to30/", "/40to50/":
+for centrality in "/20to30/", "/40to50/":
+
+    # max eta cut
+    eta_max = 1.0
+
     eos = os.path.basename(sys.argv[1])
     filenames = glob.glob(sys.argv[1] + centrality + "/*.urqmd.gz")
     print(centrality)
@@ -43,6 +47,7 @@ for centrality in "/0to10/", "/20to30/", "/40to50/":
     pion = []
     kaon = []
     proton = []
+    nch = []
     nev = 0
 
     # loop over events in each folder
@@ -52,35 +57,51 @@ for centrality in "/0to10/", "/20to30/", "/40to50/":
         E, px, py, pz, ityp, chg = event.T
         p = np.sqrt(px**2.+py**2.+pz**2.)
         pt = np.sqrt(px**2.+py**2.)
-        eta = 0.5*np.log((p+pz)/(p-pz))
+        rapidity = 0.5*np.log((p+pz)/(p-pz))
+        #rapidity = 0.5*np.log((E+pz)/(E-pz))
 
         # cut on rapidity and charge
-        cut_pi = (np.abs(eta) < 1.0) & (ityp.astype(int) == 101) & (chg.astype(int) != 0)
-        cut_k  = (np.abs(eta) < 1.0) & (ityp.astype(int) == 106) & (chg.astype(int) != 0)
-        cut_p  = (np.abs(eta) < 1.0) & (ityp.astype(int) == 1) & (chg.astype(int) == 1)
+        cut_pi  = (np.abs(rapidity) < eta_max) & (ityp.astype(int) == 101) & (chg.astype(int) > 0)
+        cut_k   = (np.abs(rapidity) < eta_max) & (ityp.astype(int) == 106) & (chg.astype(int) > 0)
+        cut_p   = (np.abs(rapidity) < eta_max) & (ityp.astype(int) == 1) & (chg.astype(int) == 1)
+        cut_nch = (np.abs(rapidity) < eta_max) & (chg.astype(int) != 0)
 
         # append pt
         pion.extend(pt[cut_pi])
         kaon.extend(pt[cut_k])
         proton.extend(pt[cut_p])
+        nch.append(pt[cut_nch].size)
 
         # increment event counter
         nev += 1
-        print(nev)
 
     pion = np.array(pion)
     kaon = np.array(kaon)
     proton = np.array(proton)
-    arrays = pion, kaon, proton
-    names = "/pion", "/kaon", "/proton"
+    nch = np.array(nch)
 
-    for array, name in zip(arrays, names):
-        
-        hist, bin_edges = np.histogram(array, bins=np.linspace(0., 3., 20), weights=1/(nev*2*np.pi*array), normed=False)
-        bin_centers = 0.5*(bin_edges[1:]+bin_edges[:-1])
+    # print particle density
+    print("charged:", nch.mean()/(2.*eta_max))
+    print("pion:", pion.size/float(nev)/(2.*eta_max))
+    print("kaon:", kaon.size/float(nev)/(2.*eta_max))
+    print("proton:", proton.size/float(nev)/(2.*eta_max))
+    
+#    pt_lists = pion, kaon, proton
+#    names = "/pion", "/kaon", "/proton"
 
-        directory="results/" + eos + centrality
-        if not os.path.exists(directory):
-            os.makedirs(directory)
+#    for pt_list, name in zip(pt_lists, names):
+#        pt_min = 0. 
+#        pt_max = 3.2
+#        dpt = 0.2 
+#        deta = 2.*eta_max
+#        bin_edges = np.arange(pt_min, pt_max, dpt)
+#        bin_centers = 0.5*(bin_edges[1:] + bin_edges[:-1])
+#        w = 2.*np.pi*pt_list*dpt*deta*nev
+#        hist = np.histogram(pt_list, bins=bin_edges, weights=1./w, normed=False)[0]
+#        err = np.sqrt(np.histogram(pt_list, bins=bin_edges, normed=False)[0])/(2.*np.pi*bin_centers*dpt*deta*nev)
 
-        np.savez(directory + name, hist=hist, bin_centers=bin_centers)
+#        directory="results/" + eos + centrality
+#        if not os.path.exists(directory):
+#            os.makedirs(directory)
+#
+#        np.savez(directory + name, bin_centers=bin_centers, hist=hist, err=err)

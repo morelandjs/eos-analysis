@@ -9,7 +9,7 @@ for centrality in "/0to10/", "/20to30/", "/40to50/":
         
     eos = os.path.basename(sys.argv[1])
     particle_types = "/*.pi.dflow.gz", "/*.k.dflow.gz", "/*.p.dflow.gz"
-    names = "/pion", "/kaon", "proton"
+    names = "/pion", "/kaon", "/proton"
     print("parsing", eos + centrality)
     
     for particle_type, name in zip(particle_types, names):

@@ -47,10 +47,6 @@ plt.rcParams.update({
         'pdf.fonttype': 42
 })
 
-# seaborn properties
-#sns.set(style="white", font='CMU Serif', font_scale=1.5, rc={"lines.linewidth": 0.5})
-
-
 def plotfn(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
@@ -76,9 +72,9 @@ def despine(ax=None, remove_ticks=False):
 
 @plotfn
 def spectra():
-    centralities = '/0to10/', '/20to30/', '/40to50/'
-    labels = '0–10%', '20–30%', '40–50%'
-    offsets = 0.1, 0.05, 0
+    centralities = '/0to5/', '/20to30/', '/40to50/'
+    labels = '0–5%', '20–30%', '40–50%'
+    data_columns = 3, 11, 15
     
     fig = plt.figure(figsize=(textwidth, textwidth*aspect))
     gs = plt.GridSpec(3, 9, wspace=0.0, hspace=0.0)
@@ -92,34 +88,55 @@ def spectra():
         ax.tick_params(top='off', right='off', labelbottom='off', labelleft='off')
     ax1.tick_params(labelleft='on')
 
-    for ax, centrality, label, offset in zip(axes, centralities, labels, offsets):
+    for ax, centrality, label, data_column in zip(axes, centralities, labels, data_columns):
         try:
+            # load model results
             pi = np.load("../results/HotQCD/" + centrality + "/pion.npz")
             k = np.load("../results/HotQCD/" + centrality + "/kaon.npz")
             p = np.load("../results/HotQCD/" + centrality + "/proton.npz")
+            
+            # load exp results
+            pi_pt, pi_yield, pi_yield_err = np.loadtxt("exp/pi+.dat", usecols=(0, data_column, data_column + 1), unpack=True)
+            k_pt, k_yield, k_yield_err = np.loadtxt("exp/k+.dat", usecols=(0, data_column, data_column + 1), unpack=True)
+            p_pt, p_yield, p_yield_err = np.loadtxt("exp/p.dat", usecols=(0, data_column, data_column + 1), unpack=True)
+
         except IOError:
             print("missing file in", system + centrality)
         else:
-            ax.plot(pi['bin_centers'], 100*pi['hist'], linewidth=0.75, color=plt.cm.Blues(0.6), label=r'$\pi^\pm \times 10^2$')
-            ax.plot(k['bin_centers'], 10*k['hist'], linewidth=0.75, color=plt.cm.Oranges(0.6), label=r'$K^\pm \times 10$')
-            ax.plot(p['bin_centers'], p['hist'], linewidth=0.75, color=plt.cm.Greens(0.6), label=r'$p$')
+            # plot model results
+            ax.plot(pi['bin_centers'], 100*pi['hist'], linewidth=0.75, color=plt.cm.Blues(0.6), label=r'$\pi^+ \! \times 10^2$')
+            ax.fill_between(pi['bin_centers'], 100*(pi['hist'] - 2*pi['err']), 100*(pi['hist'] + 2*pi['err']), color=plt.cm.Blues(0.6), alpha=0.4, linewidth=0)
 
-        # x-axis labels
-        ax.set_xlim([0,3.0])
-        ax.set_xticks([0.0, 0.5,  1.0, 1.5,  2.0, 2.5])
+            ax.plot(k['bin_centers'], 10*k['hist'], linewidth=0.75, color=plt.cm.Oranges(0.6), label=r'$K^+ \! \times 10$')
+            ax.fill_between(k['bin_centers'], 10*(k['hist'] - 2*k['err']), 10*(k['hist'] + 2*k['err']), color=plt.cm.Oranges(0.6), alpha=0.4, linewidth=0)
+
+            ax.plot(p['bin_centers'], p['hist'], linewidth=0.75, color=plt.cm.Greens(0.6), label=r'$p$')
+            ax.fill_between(p['bin_centers'], (p['hist'] - 2*p['err']), (p['hist'] + 2*p['err']), color=plt.cm.Greens(0.6), alpha=0.4, linewidth=0)
+
+            # plot exp results
+            ax.plot(pi_pt, 100*pi_yield, 'o', color=offblack, markerfacecolor=offblack, markeredgecolor='none', markersize=3, zorder=100, label=r'$\pi^+ \! \times 10^2$')
+            ax.plot(k_pt, 10*k_yield, 's', color=offblack, markerfacecolor=offblack, markeredgecolor='none', markersize=2.6, zorder=100, label=r'$K^+ \! \times 10$')
+            ax.plot(p_pt, p_yield, '^', color=offblack, markerfacecolor=offblack, markeredgecolor='none', markersize=3.5, zorder=100, label=r'$p$')
+
+            # x-axis labels
+            ax.set_xlim([0,3.0])
+            ax.set_xticks([0.0, 0.5,  1.0, 1.5,  2.0, 2.5])
         
-        # y-axis labels
-        ax.set_ylim([3*10e-5, 2*10e3])
-        ax.set_yscale('log')
-        ax.minorticks_off()
+            # y-axis labels
+            ax.set_ylim([10e-4, 10e4])
+            ax.set_yscale('log')
+            ax.minorticks_off()
         
         # annotations
         ax.annotate(label, xy=(0.5,0.95), xycoords='axes fraction', ha='center', fontsize=texnormal)
-    
-    ax3.legend(bbox_to_anchor=(1.05,1.0))
+   
+    handles, labels = ax1.get_legend_handles_labels()
+    ax2.legend(handles[0:3], labels[0:3], bbox_to_anchor=(1.05,1.05), handletextpad=0.5, handlelength=1.4, labelspacing=0)
+    ax3.annotate('PHENIX', xy=(0.95,1), xycoords='axes fraction', ha='center')
+    ax3.legend(handles[3:6], labels[3:6], bbox_to_anchor=(1.15,1.05), handletextpad=0.0, labelspacing=0)
 
     # y-axis labels
-    ax1.set_ylabel(r'$dN/(2 \pi p_T dp_T d\eta) \,[\mathrm{GeV}^{-2}]$')
+    ax1.set_ylabel(r'$dN/(2 \pi p_T dp_T dy) \,[\mathrm{GeV}^{-2}]$')
     ax3.annotate('HotQCD', xy=(1.025,0.5), va='center', xycoords='axes fraction', rotation=-90, fontsize=texnormal)
     ax1.set_yticks([10e-4, 10e-2, 10e0, 10e2])
     
@@ -134,7 +151,7 @@ def spectra():
         ax.tick_params(top='off', right='off', labelbottom='off', labelleft='off')
     ax1a.tick_params(labelleft='on')
     ax1a.set_ylabel("Ratio")
-    ax1a.set_yticks([0.8, 1.0, 1.2])
+    ax1a.set_yticks([0.7, 1.0, 1.3])
     ax3a.annotate('WB', xy=(1.025,0.5), va='center', xycoords='axes fraction', rotation=-90, fontsize=texnormal)
 
     for ax, centrality in zip(axes, centralities):
@@ -148,11 +165,28 @@ def spectra():
         except IOError:
             print("missing file in", system + centrality)
         else:
-            ax.plot(pi['bin_centers'], pi_WB['hist']/pi_HotQCD['hist'], linewidth=0.75, color=plt.cm.Blues(0.6))
-            ax.plot(k['bin_centers'], k_WB['hist']/k_HotQCD['hist'], linewidth=0.75, color=plt.cm.Oranges(0.6))
-            ax.plot(p['bin_centers'], p_WB['hist']/p_HotQCD['hist'], linewidth=0.75, color=plt.cm.Greens(0.6))
+            pt = pi_HotQCD['bin_centers']
+            ratio = pi_WB['hist']/pi_HotQCD['hist']
+            err = ratio*np.sqrt((2*pi_WB['err']/pi_WB['hist'])**2 + (2*pi_HotQCD['err']/pi_HotQCD['hist'])**2)
+            ax.plot(pt, ratio, linewidth=0.75, color=plt.cm.Blues(0.6))
+            ax.fill_between(pt, ratio - err , ratio + err, color=plt.cm.Blues(0.6), alpha=0.4, linewidth=0)  
+
+            pt = k_HotQCD['bin_centers']
+            ratio = k_WB['hist']/k_HotQCD['hist']
+            err = ratio*np.sqrt((2*k_WB['err']/k_WB['hist'])**2 + (2*k_HotQCD['err']/k_HotQCD['hist'])**2)
+            ax.plot(pt, ratio, linewidth=0.75, color=plt.cm.Oranges(0.6))
+            ax.fill_between(pt, ratio - err , ratio + err, color=plt.cm.Oranges(0.6), alpha=0.4, linewidth=0)
+
+            pt = p_HotQCD['bin_centers']
+            ratio = p_WB['hist']/p_HotQCD['hist']
+            err = ratio*np.sqrt((2*p_WB['err']/p_WB['hist'])**2 + (2*p_HotQCD['err']/p_HotQCD['hist'])**2)
+            ax.plot(pt, ratio, linewidth=0.75, color=plt.cm.Greens(0.6))
+            ax.fill_between(pt, ratio - err , ratio + err, color=plt.cm.Greens(0.6), alpha=0.4, linewidth=0)
+
             ax.plot(np.linspace(0,3,100), np.ones(100), linewidth=0.2, color='gray')
-            ax.set_ylim([0.7,1.3])
+           
+            ax.set_xlim([0,3.0])
+            ax.set_ylim([0.5,1.5])
 
     ax2a.tick_params(labelleft='off')
     ax3a.tick_params(labelleft='off')
@@ -168,27 +202,44 @@ def spectra():
         ax.tick_params(top='off', right='off', labelleft='off')
     ax1b.tick_params(labelleft='on')
     ax1b.set_ylabel("Ratio")
-    ax1b.set_yticks([0.8, 1.0, 1.2])
-    ax3b.annotate('s95-PCE', xy=(1.025,0.5), va='center', xycoords='axes fraction', rotation=-90, fontsize=texnormal)
+    ax1b.set_yticks([0.7, 1.0, 1.3])
+    ax3b.annotate('S95', xy=(1.025,0.5), va='center', xycoords='axes fraction', rotation=-90, fontsize=texnormal)
 
     for ax, centrality in zip(axes, centralities):
         try:
             pi_HotQCD = np.load("../results/HotQCD/" + centrality + "/pion.npz")
             k_HotQCD = np.load("../results/HotQCD/" + centrality + "/kaon.npz")
             p_HotQCD = np.load("../results/HotQCD/" + centrality + "/proton.npz")
-            pi_s95 = np.load("../results/s95-PCE/" + centrality + "/pion.npz")
-            k_s95 = np.load("../results/s95-PCE/" + centrality + "/kaon.npz")
-            p_s95 = np.load("../results/s95-PCE/" + centrality + "/proton.npz")
+            pi_s95 = np.load("../results/s95/" + centrality + "/pion.npz")
+            k_s95 = np.load("../results/s95/" + centrality + "/kaon.npz")
+            p_s95 = np.load("../results/s95/" + centrality + "/proton.npz")
         except IOError:
             print("missing file in", system + centrality)
         else:
-            ax.plot(pi['bin_centers'], pi_s95['hist']/pi_HotQCD['hist'], linewidth=0.75, color=plt.cm.Blues(0.6))
-            ax.plot(k['bin_centers'], k_s95['hist']/k_HotQCD['hist'], linewidth=0.75, color=plt.cm.Oranges(0.6))
-            ax.plot(p['bin_centers'], p_s95['hist']/p_HotQCD['hist'], linewidth=0.75, color=plt.cm.Greens(0.6))
-            ax.plot(np.linspace(0,3,100), np.ones(100), linewidth=0.2, color='gray')
 
+            pt = pi_HotQCD['bin_centers']
+            ratio = pi_s95['hist']/pi_HotQCD['hist']
+            err = ratio*np.sqrt((2*pi_s95['err']/pi_s95['hist'])**2 + (2*pi_HotQCD['err']/pi_HotQCD['hist'])**2)
+            ax.plot(pt, ratio, linewidth=0.75, color=plt.cm.Blues(0.6))
+            ax.fill_between(pt, ratio - err , ratio + err, color=plt.cm.Blues(0.6), alpha=0.4, linewidth=0)  
+
+            pt = k_HotQCD['bin_centers']
+            ratio = k_s95['hist']/k_HotQCD['hist']
+            err = ratio*np.sqrt((2*k_s95['err']/k_s95['hist'])**2 + (2*k_HotQCD['err']/k_HotQCD['hist'])**2)
+            ax.plot(pt, ratio, linewidth=0.75, color=plt.cm.Oranges(0.6))
+            ax.fill_between(pt, ratio - err , ratio + err, color=plt.cm.Oranges(0.6), alpha=0.4, linewidth=0)
+
+            pt = p_HotQCD['bin_centers']
+            ratio = p_s95['hist']/p_HotQCD['hist']
+            err = ratio*np.sqrt((2*p_s95['err']/p_s95['hist'])**2 + (2*p_HotQCD['err']/p_HotQCD['hist'])**2)
+            ax.plot(pt, ratio, linewidth=0.75, color=plt.cm.Greens(0.6))
+            ax.fill_between(pt, ratio - err , ratio + err, color=plt.cm.Greens(0.6), alpha=0.4, linewidth=0)
+
+            ax.plot(np.linspace(0,3,100), np.ones(100), linewidth=0.2, color='gray')
+            
+            ax.set_xlim([0,3.0])
             ax.set_xlabel("$p_T$ [GeV]")
-            ax.set_ylim([0.7,1.3])
+            ax.set_ylim([0.5,1.5])
 
     plt.tight_layout(pad=.1, w_pad=0, rect=[0,0,0.975,1])
 

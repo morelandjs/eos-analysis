@@ -49,11 +49,14 @@ void write_correlations(const boost::multi_array<double, 4>& data, char filename
 // main function: calculates hbt correlations
 int main(int argc, char **argv)
 {
+    // hbarc
+    const double hbarc = 0.19733;
+
     // fix q_out, q_side, q_long, kt partitions
-    double kt_min =  0.0, kt_max = 1.0; const int nkt = 10; double dkt = (kt_max - kt_min)/nkt;
-    double qo_min = -0.5, qo_max = 0.5; const int nqo = 20; double dqo = (qo_max - qo_min)/nqo;
-    double qs_min = -0.5, qs_max = 0.5; const int nqs = 20; double dqs = (qs_max - qs_min)/nqs;
-    double ql_min = -0.5, ql_max = 0.5; const int nql = 20; double dql = (ql_max - ql_min)/nql;
+    double kt_min = 0.0, kt_max = 1.0; const int nkt = 10; double dkt = (kt_max - kt_min)/nkt;
+    double qo_min = 0.0, qo_max = 0.1; const int nqo = 15; double dqo = (qo_max - qo_min)/nqo;
+    double qs_min = 0.0, qs_max = 0.1; const int nqs = 15; double dqs = (qs_max - qs_min)/nqs;
+    double ql_min = 0.0, ql_max = 0.1; const int nql = 15; double dql = (ql_max - ql_min)/nql;
 
     // initialize correlation arrays
     boost::multi_array<double, 4> Csame(boost::extents[nkt][nqo][nqs][nql]);
@@ -64,8 +67,8 @@ int main(int argc, char **argv)
     string path = argv[1], file1 = argv[2], file2 = argv[3], writepath = argv[4];
 
     // open and read urqmd events
-    string file1_path = path + "/" + file1 + ".gz";
-    string file2_path = path + "/" + file2 + ".gz"; 
+    string file1_path = path + "/" + file1 + ".urqmd.gz";
+    string file2_path = path + "/" + file2 + ".urqmd.gz"; 
     urqmd_reader event1(file1_path.c_str());
     urqmd_reader event2(file2_path.c_str());
 
@@ -99,7 +102,6 @@ int main(int argc, char **argv)
             // calculate k, q, dx vectors
             vector<double> k{(p1[1] + p2[1])/2, (p1[2] + p2[2])/2, (p1[3] + p2[3])/2};
             vector<double> q{p2[1] - p1[1], p2[2] - p1[2], p2[3] - p1[3]};
-            vector<double> dx{x2[1] - x1[1], x2[2] - x1[2], x2[3] - x1[3]};
             
             // inner product of q and dx
             double qdotx = - (p2[0] - p1[0])*(x2[0] - x1[0]) // - dE*dt
@@ -112,9 +114,9 @@ int main(int argc, char **argv)
             double cos_theta = kx/kt, sin_theta = ky/kt;
             vector<double> r_hat = {cos_theta, sin_theta, 0.};
             vector<double> theta_hat = {-sin_theta, cos_theta, 0.};
-            double qo = inner_product(q.begin(), q.end(), r_hat.begin(), 0.);
-            double qs = inner_product(q.begin(), q.end(), theta_hat.begin(), 0.);
-            double ql = q[2];
+            double qo = abs(inner_product(q.begin(), q.end(), r_hat.begin(), 0.));
+            double qs = abs(inner_product(q.begin(), q.end(), theta_hat.begin(), 0.));
+            double ql = abs(q[2]);
 
             // continue if k or q is off the grid
             if(kt < kt_min || qo < qo_min || qs < qs_min || ql < ql_min) continue;
@@ -127,7 +129,7 @@ int main(int argc, char **argv)
             int iql = (ql - ql_min)/dql;
 
             // add same event correlations
-            Csame[ikt][iqo][iqs][iql] += (1. + cos(qdotx))/(dkt*dqo*dqs*dql);
+            Csame[ikt][iqo][iqs][iql] += (1. + cos(qdotx/hbarc))/(dkt*dqo*dqs*dql);
             n_same += 1.;
         }
 
@@ -154,9 +156,9 @@ int main(int argc, char **argv)
             double cos_theta = kx/kt, sin_theta = ky/kt;
             vector<double> r_hat = {cos_theta, sin_theta, 0.};
             vector<double> theta_hat = {-sin_theta, cos_theta, 0.};
-            double qo = inner_product(q.begin(), q.end(), r_hat.begin(), 0.);
-            double qs = inner_product(q.begin(), q.end(), theta_hat.begin(), 0.);
-            double ql = q[2];
+            double qo = abs(inner_product(q.begin(), q.end(), r_hat.begin(), 0.));
+            double qs = abs(inner_product(q.begin(), q.end(), theta_hat.begin(), 0.));
+            double ql = abs(q[2]);
             
             // test if q vector is off grid
             if(kt < kt_min || qo < qo_min || qs < qs_min || ql < ql_min) continue;

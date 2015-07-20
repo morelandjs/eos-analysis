@@ -6,5 +6,15 @@
 *.dat
 *.hd5
 *.pdf
+*.npz
+*.aux
+*.log
+*.out
+*.pdf
+**/build
 data/
+hbt/results
+initial-condition
+trento/build
+trento/data
 

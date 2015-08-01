@@ -77,7 +77,7 @@ T, I, e, p, Cs = np.loadtxt("hrg-eos/hrg-urqmd-eos.dat",dtype='float',unpack=Tru
 fI_lo = interp1d(T, I, kind='cubic')
 
 T = np.linspace(5,200,100)
-plt.plot(T/1000,fI_lo(T),'--',color='orange',linewidth=2.0,zorder = 301, label="UrQMD partial reson.")
+plt.plot(T/1000,fI_lo(T),'--',color='orange',linewidth=2.0,zorder = 301, label="UrQMD")
 ####################################################################################
 
 # construct high temperature interaction measure
@@ -121,7 +121,7 @@ fI_hi = interp1d(T*1000, I, kind='cubic')
 
 # plot HotQCD trace anomaly))
 T = np.linspace(130,800,1000)
-plt.plot(T/1000,fI_hi(T),color='red',linewidth=2.0,zorder = 99, label="HotQCD param.")
+plt.plot(T/1000,fI_hi(T),color='red',linewidth=2.0,zorder = 99, label="HotQCD")
 
 #########################################################################################################################
 
@@ -141,7 +141,7 @@ k1, k4, k2, k3, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16 = np.loadt
 N = k1.size
 
 # loop over splines (range fixed to 1 to test first interaction measure)
-for ic in range(5):
+for ic in range(0):
 
     # initialize basis functions
     B1 = np.zeros(nT)

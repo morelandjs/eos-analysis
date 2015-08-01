@@ -59,7 +59,7 @@ def despine(ax=None, remove_ticks=False):
         ax.xaxis.set_ticks_position('bottom')
         ax.yaxis.set_ticks_position('left')
 
-fig = plt.figure(figsize=(1.3*columnwidth, columnwidth*aspect))
+fig = plt.figure(figsize=(columnwidth, columnwidth*aspect))
 ax = fig.gca()
 
 blue = '#3399FF'
@@ -69,7 +69,7 @@ orange = '#FF9900'
 # hbarc
 hbarc = 0.19733
 
-# loa s95, HotQCD and WB equations of state
+# s95, HotQCD and WB equations of state
 eEOS1, pEOS1, sEOS1, TEOS1 = np.loadtxt("s95-PCE-EOS.dat",dtype='float',unpack=True)
 eEOS2, pEOS2, sEOS2, TEOS2 = np.loadtxt("HotQCD-EOS.dat",dtype='float',unpack=True)
 eEOS3, pEOS3, sEOS3, TEOS3 = np.loadtxt("WB-EOS.dat",dtype='float',unpack=True)
@@ -94,7 +94,7 @@ plt.xlim(0.0, 0.75)
 plt.ylim(0.0, 24.0)
 plt.xlabel('$T$ [GeV]', fontsize=texnormal)
 plt.ylabel('')
-plt.legend(bbox_to_anchor=(0.91, 1.05), ncol=3, handlelength=2.9, fontsize=texnormal)
+plt.legend(bbox_to_anchor=(1., 1.05), ncol=3, handlelength=2.9, fontsize=texnormal)
 plt.annotate('$s/T^3$', xy=(0.9, 0.775), xycoords='axes fraction',fontsize=texnormal)
 plt.annotate('$e/T^4$', xy=(0.9, 0.575), xycoords='axes fraction',fontsize=texnormal)
 plt.annotate('$p/T^4$', xy=(0.9, 0.175), xycoords='axes fraction',fontsize=texnormal)

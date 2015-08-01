@@ -19,7 +19,7 @@ from scipy.integrate import quad
 
 T, I, e, p, Cs = np.loadtxt("hrg-eos/hrg-urqmd-eos.dat",dtype='float',unpack=True,skiprows=1)
 fI_lo = interp1d(T/1000., I, kind='cubic')
-
+#plt.plot(T/1000,I,'--')
 ##################################################################################
 
 # construct high temperature interaction measure
@@ -57,6 +57,8 @@ I = []
 for iT in T:
     I.append(dfp(iT)*iT)
 fI_hi = interp1d(T, I, kind='cubic')
+
+#plt.plot(T, fI_hi(T), '-')
 
 ###############################################################################
 
@@ -120,7 +122,7 @@ TEOS = Tinv
 
 line = FortranRecordWriter('(4E15.6)')
 
-# open output file
+ open output file
 with open('HotQCD-EOS.dat','w') as wf:
     for i in range(len(eEOS)):
         wf.write(line.write([eEOS[i],pEOS[i],sEOS[i],TEOS[i]])+"\n")

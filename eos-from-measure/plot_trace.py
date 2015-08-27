@@ -74,7 +74,7 @@ gray = '#C9C9C9'
 #################################################################
 
 T, I, e, p, Cs = np.loadtxt("tables/urqmd/hrg-urqmd-eos.dat",dtype='float',unpack=True,skiprows=1)
-plt.plot(T/1000, I, dashes=(4,1), color=orange,linewidth=1, zorder = 301, label="UrQMD")
+plt.plot(T/1000, I, dashes=(4,1), color=offblack,linewidth=1, zorder = 301, label="HRG")
 
 # HotQCD equation of state
 #################################################################
@@ -149,7 +149,11 @@ plt.plot(Tvec, I, color=magenta, label='WB')
 
 T = np.loadtxt("tables/s95p-v1/s95p-v1_Teospar.dat", usecols=(0,), skiprows=1, unpack=True)/1000.
 e, p = np.loadtxt("tables/s95p-v1/s95p-v1_Teosdens.dat", usecols=(0,1,), skiprows=1, unpack=True)*hbarc**3
-plt.plot(T, (e-3.*p)/T**4, linewidth=1, color=blue, label='S95p-v1')
+plt.plot(T, (e-3.*p)/T**4, linewidth=1, color=blue, label='s95p-v1')
+
+# hydro-to-urqmd transition line
+#################################################################
+#plt.axvline(x=0.154, ymin=0., ymax = 2, linewidth=0.2, color=gray)
 
 # figure properties
 #################################################################

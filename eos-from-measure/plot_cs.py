@@ -91,25 +91,25 @@ hbarc = 0.19733
 
 e, p, s, T = np.loadtxt('HotQCD.dat', unpack=True)
 spl = Spline(e, p)
-plt.plot(T, spl(e, nu=1), linewidth=1, color=green, label='HotQCD\'', zorder=2)
+plt.plot(T, spl(e, nu=1), linewidth=1, color=green, label='HotQCD$^\dagger$', zorder=2)
 
 # Wuppertal-Budapest equation of state
 #################################################################
 
 e, p, s, T = np.loadtxt('WB.dat', unpack=True)
 spl = Spline(e, p)
-plt.plot(T, spl(e, nu=1), linewidth=1, color=magenta, label='WB\'', zorder=3)
+plt.plot(T, spl(e, nu=1), linewidth=1, color=magenta, label='WB$^\dagger$', zorder=3)
 
 # s95p-v1 equation of state
 #################################################################
 
 e, p, s, T = np.loadtxt('S95.dat', unpack=True)
 spl = Spline(e, p)
-plt.plot(T, spl(e, nu=1), linewidth=1, color=blue, label='S95\'', zorder=1)
+plt.plot(T, spl(e, nu=1), linewidth=1, color=blue, label=r'S95$^\dagger$', zorder=1)
 
 # plot vertical line
 #################################################################
-plt.axvline(x=0.154, ymin=0., ymax = 2, linewidth=0.2, color=gray)
+plt.axvline(x=0.155, ymin=0., ymax = 2, linewidth=0.2, color=gray)
 
 # figure properties
 #################################################################
@@ -121,6 +121,6 @@ plt.yticks([0.1,0.2,0.3])
 plt.xlabel('$T$ [GeV]')
 plt.ylabel('$c_s^2$')
 plt.tight_layout(pad=0.2)
-plt.legend(bbox_to_anchor=(1,0.4))
+plt.legend(bbox_to_anchor=(1.02,0.5))
 plt.savefig('cs.pdf')
 plt.show()

@@ -87,7 +87,7 @@ plt.plot(T[:m/3]/1000., I[:m/3], linewidth=1, color=magenta, zorder=4)
 e, p, s, T = np.loadtxt('HotQCD.dat', unpack=True)
 e *= hbarc**3
 p *= hbarc**3
-plt.plot(T, (e-3.*p)/T**4, linewidth=1, color=green, label='HotQCD\'', zorder=2)
+plt.plot(T, (e-3.*p)/T**4, linewidth=1, color=green, label=r'HotQCD$^\dagger$', zorder=2)
 
 # Wuppertal-Budapest equation of state
 #################################################################
@@ -95,7 +95,7 @@ plt.plot(T, (e-3.*p)/T**4, linewidth=1, color=green, label='HotQCD\'', zorder=2)
 e, p, s, T = np.loadtxt('WB.dat', unpack=True)
 e *= hbarc**3
 p *= hbarc**3
-plt.plot(T, (e-3.*p)/T**4, linewidth=1, color=magenta, label='WB\'', zorder=3)
+plt.plot(T, (e-3.*p)/T**4, linewidth=1, color=magenta, label=r'WB$^\dagger$', zorder=3)
 
 # s95p-v1 equation of state
 #################################################################
@@ -103,11 +103,11 @@ plt.plot(T, (e-3.*p)/T**4, linewidth=1, color=magenta, label='WB\'', zorder=3)
 e, p, s, T = np.loadtxt('S95.dat', unpack=True)
 e *= hbarc**3
 p *= hbarc**3
-plt.plot(T, (e-3.*p)/T**4, linewidth=1, color=blue, label='S95\'', zorder=1)
+plt.plot(T, (e-3.*p)/T**4, linewidth=1, color=blue, label=r'S95$^\dagger$', zorder=1)
 
 # hydro-to-urqmd transition line
 #################################################################
-plt.axvline(x=0.154, ymin=0., ymax = 2, linewidth=0.2, color=gray)
+plt.axvline(x=0.155, ymin=0., ymax = 2, linewidth=0.2, color=gray)
 
 # figure properties
 #################################################################

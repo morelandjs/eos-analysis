@@ -39,8 +39,8 @@ def main():
 
     # T [GeV] partitions for piecewise function
     T = np.linspace(0.005, 0.800, 1000)
-    Tlo  = T[T < 0.15]
-    Tmid = T[(T >= 0.15) & (T < 0.18)]
+    Tlo  = T[T < 0.155]
+    Tmid = T[(T >= 0.155) & (T < 0.18)]
     Thi  = T[T >= 0.18]
     
     # evaluate trace anomaly (e-3p)/T**4 on temperature intervals
@@ -67,8 +67,8 @@ def main():
     T_interp = Spline(e, T) 
 
     # e output mesh: GeV/fm**3
-    #e_table = np.arange(1,650000,2)*1e-3
-    e_table = np.exp(np.linspace(-6.9078,6.476972,1000))
+    e_table = np.arange(1,311000,2)*1e-3
+    #e_table = np.exp(np.linspace(-6.9078,6.476972,1000))
     p_table = p_interp(e_table)
     s_table = s_interp(e_table)
     T_table = T_interp(e_table)

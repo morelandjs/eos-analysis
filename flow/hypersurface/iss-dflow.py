@@ -13,6 +13,7 @@ for centrality in "/0to10/", "/20to30/", "/40to50/":
     print("parsing", eos + centrality)
     
     for particle_type, name in zip(particle_types, names):
+        
         filenames = glob.glob(sys.argv[1] + centrality + particle_type)
         pt, v2_, v3_ = np.array([np.loadtxt(f, usecols=(0,8,11)) for f in filenames]).transpose(2,0,1)
         pt = pt[0]

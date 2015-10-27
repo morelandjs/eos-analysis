@@ -4,12 +4,10 @@
 from __future__ import division, print_function, unicode_literals
 
 import functools
-
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
 from matplotlib import cm
 import numpy as np
-import seaborn as sns
 import os, sys
 
 # figure properties
@@ -90,9 +88,9 @@ def v2():
 
     for ax, centrality, label in zip(axes, centralities, labels):
         try:
-            pi = np.load("../results/HotQCD/" + centrality + "/pion.npz")
-            k = np.load("../results/HotQCD/" + centrality + "/kaon.npz")
-            p = np.load("../results/HotQCD/" + centrality + "/proton.npz")
+            pi = np.load("../results/hotqcd/" + centrality + "/pion.npz")
+            k = np.load("../results/hotqcd/" + centrality + "/kaon.npz")
+            p = np.load("../results/hotqcd/" + centrality + "/proton.npz")
         except IOError:
             print("missing file in", system + centrality)
         else:
@@ -134,17 +132,17 @@ def v2():
         ax.tick_params(top='off', right='off', labelbottom='off', labelleft='off')
     ax1a.tick_params(labelleft='on')
     ax1a.set_ylabel("Ratio")
-    ax1a.set_yticks([0.8, 1.0, 1.2])
+    ax1a.set_yticks([0.9, 1.0, 1.1])
     ax3a.annotate('WB', xy=(1.025,0.5), va='center', xycoords='axes fraction', rotation=-90, fontsize=texnormal)
 
     for ax, centrality in zip(axes, centralities):
         try:
-            pi_HotQCD = np.load("../results/HotQCD/" + centrality + "/pion.npz")
-            k_HotQCD = np.load("../results/HotQCD/" + centrality + "/kaon.npz")
-            p_HotQCD = np.load("../results/HotQCD/" + centrality + "/proton.npz")
-            pi_WB = np.load("../results/WB/" + centrality + "/pion.npz")
-            k_WB = np.load("../results/WB/" + centrality + "/kaon.npz")
-            p_WB = np.load("../results/WB/" + centrality + "/proton.npz")
+            pi_HotQCD = np.load("../results/hotqcd/" + centrality + "/pion.npz")
+            k_HotQCD = np.load("../results/hotqcd/" + centrality + "/kaon.npz")
+            p_HotQCD = np.load("../results/hotqcd/" + centrality + "/proton.npz")
+            pi_WB = np.load("../results/wb/" + centrality + "/pion.npz")
+            k_WB = np.load("../results/wb/" + centrality + "/kaon.npz")
+            p_WB = np.load("../results/wb/" + centrality + "/proton.npz")
         except IOError:
             print("missing file in", system + centrality)
         else:
@@ -167,7 +165,7 @@ def v2():
             ax.fill_between(pt, ratio - err , ratio + err, color=plt.cm.Greens(0.6), alpha=0.5, linewidth=0)
 
             ax.plot(np.linspace(0,3,100), np.ones(100), linewidth=0.2, color='gray')
-            ax.set_ylim([0.7,1.3])
+            ax.set_ylim([0.85,1.15])
 
     ax2a.tick_params(labelleft='off')
     ax3a.tick_params(labelleft='off')
@@ -183,14 +181,14 @@ def v2():
         ax.tick_params(top='off', right='off', labelleft='off')
     ax1b.tick_params(labelleft='on')
     ax1b.set_ylabel("Ratio")
-    ax1b.set_yticks([0.8, 1.0, 1.2])
+    ax1b.set_yticks([0.9, 1.0, 1.1])
     ax3b.annotate('S95', xy=(1.025,0.5), va='center', xycoords='axes fraction', rotation=-90, fontsize=texnormal)
 
     for ax, centrality in zip(axes, centralities):
         try:
-            pi_HotQCD = np.load("../results/HotQCD/" + centrality + "/pion.npz")
-            k_HotQCD = np.load("../results/HotQCD/" + centrality + "/kaon.npz")
-            p_HotQCD = np.load("../results/HotQCD/" + centrality + "/proton.npz")
+            pi_HotQCD = np.load("../results/hotqcd/" + centrality + "/pion.npz")
+            k_HotQCD = np.load("../results/hotqcd/" + centrality + "/kaon.npz")
+            p_HotQCD = np.load("../results/hotqcd/" + centrality + "/proton.npz")
             pi_s95 = np.load("../results/s95/" + centrality + "/pion.npz")
             k_s95 = np.load("../results/s95/" + centrality + "/kaon.npz")
             p_s95 = np.load("../results/s95/" + centrality + "/proton.npz")
@@ -218,7 +216,7 @@ def v2():
             ax.plot(np.linspace(0,3,100), np.ones(100), linewidth=0.2, color='gray')
             
             ax.set_xlabel("$p_T$ [GeV]")
-            ax.set_ylim([0.7,1.3])
+            ax.set_ylim([0.85,1.15])
     
     for ax in fig.axes:
         ax.set_xlim([0,2.5])

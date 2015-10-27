@@ -98,8 +98,8 @@ def hbt():
 
             # load model data
             try:
-                R_HQCD = np.load("../results-staged/HotQCD/" + centrality + "/R.npz")
-                R_WB = np.load("../results-staged/WB/" + centrality + "/R.npz")
+                R_HQCD = np.load("../results-staged/hotqcd/" + centrality + "/R.npz")
+                R_WB = np.load("../results-staged/wb/" + centrality + "/R.npz")
                 R_S95 = np.load("../results-staged/s95/" + centrality + "/R.npz")
                 R_exp = np.loadtxt("phenix-hbt" + exp)
             except IOError:
@@ -107,6 +107,7 @@ def hbt():
             else:
                 mt = np.sqrt(R_HQCD['kt_list']**2 + mass**2)
                 R_ = R_HQCD[R]
+                print(R_)
                 dR_ = R_HQCD[dR]
                 ax.plot(mt, R_, linewidth=0.75, color=magenta, label='HQCD $\pi^\pm$', zorder=2)
                 ax.fill_between(mt, R_ - 2*dR_, R_ + 2*dR_, alpha=0.3, linewidth=0, color=magenta, zorder=2)
@@ -158,8 +159,8 @@ def hbt():
 
         # load model data
         try:
-            R_HQCD = np.load("../results-staged/HotQCD/" + centrality + "/R.npz")
-            R_WB = np.load("../results-staged/WB/" + centrality + "/R.npz")
+            R_HQCD = np.load("../results-staged/hotqcd/" + centrality + "/R.npz")
+            R_WB = np.load("../results-staged/wb/" + centrality + "/R.npz")
             R_S95 = np.load("../results-staged/s95/" + centrality + "/R.npz")
             R_exp = np.loadtxt("phenix-hbt" + exp)
         except IOError:

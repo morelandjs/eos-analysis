@@ -16,7 +16,7 @@ using namespace std;
 // bool for POI (particles of interest)
 bool POI(int typ, double pt, double ptmin, double ptmax){
   
-    bool isPOI = //(abs(typ) == 101) && 
+    bool isPOI = (abs(typ) == 101) && 
                  (ptmin < pt) && (pt < ptmax);
     
     return isPOI;
@@ -59,7 +59,8 @@ int main(int argc, char **argv)
 
     // differential pt bins
     double ptmin=0.2, ptmax = 3.0, dpt=0.2;
-    int npt = int((ptmax-ptmin)/dpt);
+    int npt = int((ptmax-ptmin)/dpt) + 1;
+    cout << npt << endl;
 
     // initialize vars
     int nev = 0;
@@ -75,43 +76,34 @@ int main(int argc, char **argv)
         // clear existing particle containers
         type.clear(); pt.clear(); phi.clear();
 
-        // start with header = true
-        bool header = true;
-        do{
-            // grab next line
-            getline(cin, line);
+        // grab next line
+        getline(cin, line);
 
-            // test UrQMD event body
-            if(line.length() == 434){
+        // test UrQMD event body
+        if(line.length() == 307){
 
-                // if UrQMD body, turn off header
-                header = false;
+            // read from UrQMD
+            replace(line.begin(), line.end(), 'D', 'E');
+	        int type_ = stod(line.substr(145, 11));
+	        int chg_ = stoi(line.substr(159, 3));
+	        double px_ = stod(line.substr(81, 16));
+	        double py_ = stod(line.substr(97, 16));
+	        double pz_ = stod(line.substr(113, 16));
+	        double p_ = sqrt(px_*px_ + py_*py_ + pz_*pz_);
+            double pt_ = sqrt(px_*px_ + py_*py_);
+            double phi_ = atan2(py_, px_);
+	        double eta_ = 0.5*log((p_ + pz_)/(p_ - pz_));
 
-                // read from UrQMD
-                replace(line.begin(), line.end(), 'D', 'E');
-	            int type_ = stod(line.substr(217, 4));
-	            int chg_ = stoi(line.substr(225, 2));
-	            double px_ = stod(line.substr(121, 23));
-	            double py_ = stod(line.substr(145, 23));
-	            double pz_ = stod(line.substr(169, 23));
-	            double p_ = sqrt(px_*px_ + py_*py_ + pz_*pz_);
-                double pt_ = sqrt(px_*px_ + py_*py_);
-                double phi_ = atan2(py_, px_);
-	            double eta_ = 0.5*log((p_ + pz_)/(p_ - pz_));
+            bool cut = (chg_ != 0) &&
+                       (eta_min < eta_) && (eta_ < eta_max) && 
+                       (pt_min < pt_) && (pt_ < pt_max);
 
-                bool cut = (chg_ != 0) &&
-                           (eta_min < eta_) && (eta_ < eta_max) && 
-                           (pt_min < pt_) && (pt_ < pt_max);
-
-	            if(cut){
-	                type.push_back(type_);
-	                pt.push_back(pt_);
-	                phi.push_back(phi_);
-	            }
-            }
-
-        // single event parsed, data stored in ityp, pt, phi
-        }while(header || line.length()==434);
+	        if(cut){
+	            type.push_back(type_);
+	            pt.push_back(pt_);
+	            phi.push_back(phi_);
+	        }
+        }
 
         // initialize variables
         double M = 0.; 
@@ -355,21 +347,12 @@ int main(int argc, char **argv)
 
   //#####################################################################################################################
   
-  // v_n{2} | v_n{2} error | v_n{4} | v_n{4} error
-  cout << left
-       << fixed << setprecision(6) << setw(14) << real(v2)
-       << fixed << setprecision(6) << setw(14) << real(v2err)
-       << fixed << setprecision(6) << setw(14) << real(v4)
-       << fixed << setprecision(6) << setw(14) << real(v4err)
-       << endl;
-
   // diff v_n{2} | diff v_n{2} error | diff v_n{4} | diff v_n{4} error
   for(int ipt=0; ipt<npt; ipt++){
       cout  << left
+	        << fixed << setprecision(6) << setw(14) << pt_min + ipt*dpt
 	        << fixed << setprecision(6) << setw(14) << real(v2p[ipt])
 	        << fixed << setprecision(6) << setw(14) << real(v2perr[ipt])
-            << fixed << setprecision(6) << setw(14) << real(v4p[ipt]) 
-	        << fixed << setprecision(6) << setw(14) << real(v4perr[ipt])
             << endl;
   }
 

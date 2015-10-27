@@ -25,24 +25,24 @@ urqmd_reader::urqmd_reader(const char* filename){
     while(getline(event,line)){   
     
         // skip headers
-        if(line.length() != 434) continue;
+        if(line.length() != 307) continue;
         replace(line.begin(), line.end(), 'D', 'E');
 
         // properties
-        int typ_ = stoi(line.substr(217, 4));
-        int chg_ = stoi(line.substr(225, 2));
+        int typ_ = stoi(line.substr(145, 11));
+        int chg_ = stoi(line.substr(159, 3));
     
         // four-position
-        double t_ = stod(line.substr(243, 23));
-        double x_ = stod(line.substr(267, 23));
-        double y_ = stod(line.substr(291, 23));
-        double z_ = stod(line.substr(315, 23));
+        double t_ = stod(line.substr(180, 16));
+        double x_ = stod(line.substr(196, 16));
+        double y_ = stod(line.substr(212, 16));
+        double z_ = stod(line.substr(228, 16));
 
         // four momentum
-        double e_ = stod(line.substr(339, 23));
-        double px_ = stod(line.substr(363, 23));
-        double py_ = stod(line.substr(387, 23));
-        double pz_ = stod(line.substr(411, 23));
+        double e_ = stod(line.substr(244, 16));
+        double px_ = stod(line.substr(260, 16));
+        double py_ = stod(line.substr(276, 16));
+        double pz_ = stod(line.substr(292, 16));
     
         // pseudorapidity
         double p_ = pow(px_*px_ + py_*py_ + pz_*pz_, 0.5);

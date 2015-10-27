@@ -39,7 +39,7 @@ def hotqcd_e3p_T4(T):
 #########################################################################################################################
 
 # T [GeV] partitions for piecewise function
-T = np.linspace(0.005,0.800,1000)
+T = np.linspace(0.005,0.605,601)
 Tlo  = T[T < 0.155]
 Tmid = T[(T >= 0.155) & (T < 0.180)]
 Thi  = T[T >= 0.180]
@@ -92,34 +92,49 @@ for ic in range(100):
     p = p_T4_interp(T)*T**4/hbarc**3
     s = s_T3*T**3/hbarc**3
 
-    plt.plot(T, e/T**4)
-    plt.plot(T, p/T**4)
-    plt.plot(T, s/T**3)
-
     # power law extrapolation
-    #for iT, T_ in enumerate(T):
-    #    if T_ > 0.4:
+    iT0, T0 = np.where(T == 0.39)[0], 0.39
+    iT1, T1 = np.where(T == 0.4)[0], 0.4
+    logx0, logx1 = np.log(T0), np.log(T1)
 
+    # fix energy
+    logy0, logy1 = np.log(e[iT0]), np.log(e[iT1])
+    P1 = np.exp((logx0*logy1 - logx1*logy0) / (logx0 - logx1))
+    P2 = (logy0 - logy1) / (logx0 - logx1)
+    e[T > 0.4] = P1*T[T > 0.4]**P2
+
+    # fix pressure
+    logy0, logy1 = np.log(p[iT0]), np.log(p[iT1])
+    P1 = np.exp((logx0*logy1 - logx1*logy0) / (logx0 - logx1))
+    P2 = (logy0 - logy1) / (logx0 - logx1)
+    p[T > 0.4] = P1*T[T > 0.4]**P2
+
+    # fix entropy
+    logy0, logy1 = np.log(s[iT0]), np.log(s[iT1])
+    P1 = np.exp((logx0*logy1 - logx1*logy0) / (logx0 - logx1))
+    P2 = (logy0 - logy1) / (logx0 - logx1)
+    s[T > 0.4] = P1*T[T > 0.4]**P2
+    
+#    plt.plot(T, e/T**4)
+#    plt.plot(T, p/T**4)
+#    plt.plot(T, s/T**3)
+    
     # express as functions of energy density
     p_interp = Spline(e, p)
     s_interp = Spline(e, s) 
     T_interp = Spline(e, T) 
 
     # e output mesh: GeV/fm**3
-#    e_table = np.arange(1,311000,2)*1e-3
-    e_table = np.exp(np.linspace(-6.9078,6.476972,1000))
+    e_table = np.arange(1,311000,2)*1e-3
+    #e_table = np.exp(np.linspace(-6.9078,6.476972,1000))
     p_table = p_interp(e_table)
     s_table = s_interp(e_table)
     T_table = T_interp(e_table)
 
     # print to file in fortran format
-#    line = FortranRecordWriter('(4E15.6)')
-#    with open('hotqcd.dat','w') as wf:
-#        for i in range(len(e_table)):
-#            wf.write(line.write([e_table[i], p_table[i], s_table[i], T_table[i]])+"\n")
+    line = FortranRecordWriter('(4E15.6)')
+    with open('eos-tables/hotqcd_%s.dat' % ic,'w') as wf:
+        for i in range(len(e_table)):
+            wf.write(line.write([e_table[i], p_table[i], s_table[i], T_table[i]])+"\n")
 
-#plt.plot(T, hotqcd_e3p_T4(T), color='r', lw=4)
-#plt.plot(T, urqmd_e3p_T4(T), color='k', lw=4)
-plt.xlim(0.050,0.800)
-#plt.ylim(0,5)
-plt.show()
+#plt.show()

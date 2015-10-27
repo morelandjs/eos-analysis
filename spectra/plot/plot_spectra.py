@@ -4,12 +4,10 @@
 from __future__ import division, print_function, unicode_literals
 
 import functools
-
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
 from matplotlib import cm
 import numpy as np
-import seaborn as sns
 import os, sys
 
 # figure properties
@@ -72,9 +70,9 @@ def despine(ax=None, remove_ticks=False):
 
 @plotfn
 def spectra():
-    centralities = '/0to5/', '/20to30/', '/40to50/'
-    labels = '0–5%', '20–30%', '40–50%'
-    data_columns = 3, 11, 15
+    centralities = '/10to15/', '/20to30/', '/40to50/'
+    labels = '10–15%', '20–30%', '40–50%'
+    data_columns = 7, 11, 15
     
     fig = plt.figure(figsize=(textwidth, textwidth*aspect))
     gs = plt.GridSpec(3, 9, wspace=0.0, hspace=0.0)
@@ -91,9 +89,9 @@ def spectra():
     for ax, centrality, label, data_column in zip(axes, centralities, labels, data_columns):
         try:
             # load model results
-            pi = np.load("../results/HotQCD/" + centrality + "/pion.npz")
-            k = np.load("../results/HotQCD/" + centrality + "/kaon.npz")
-            p = np.load("../results/HotQCD/" + centrality + "/proton.npz")
+            pi = np.load("../results/hotqcd/" + centrality + "/pion.npz")
+            k = np.load("../results/hotqcd/" + centrality + "/kaon.npz")
+            p = np.load("../results/hotqcd/" + centrality + "/proton.npz")
             
             # load exp results
             pi_pt, pi_yield, pi_yield_err = np.loadtxt("exp/pi+.dat", usecols=(0, data_column, data_column + 1), unpack=True)
@@ -137,7 +135,7 @@ def spectra():
 
     # y-axis labels
     ax1.set_ylabel(r'$dN/(2 \pi p_T dp_T dy) \,[\mathrm{GeV}^{-2}]$')
-    ax3.annotate('HotQCD', xy=(1.025,0.5), va='center', xycoords='axes fraction', rotation=-90, fontsize=texnormal)
+    ax3.annotate('HQCD', xy=(1.025,0.5), va='center', xycoords='axes fraction', rotation=-90, fontsize=texnormal)
     ax1.set_yticks([10e-4, 10e-2, 10e0, 10e2])
     
     # WB/HotQCD
@@ -151,17 +149,17 @@ def spectra():
         ax.tick_params(top='off', right='off', labelbottom='off', labelleft='off')
     ax1a.tick_params(labelleft='on')
     ax1a.set_ylabel("Ratio")
-    ax1a.set_yticks([0.7, 1.0, 1.3])
-    ax3a.annotate('WB', xy=(1.025,0.5), va='center', xycoords='axes fraction', rotation=-90, fontsize=texnormal)
+    ax1a.set_yticks([0.8, 1.0, 1.2])
+    ax3a.annotate('WB/HQCD', xy=(1.025,0.5), va='center', xycoords='axes fraction', rotation=-90, fontsize=texnormal)
 
     for ax, centrality in zip(axes, centralities):
         try:
-            pi_HotQCD = np.load("../results/HotQCD/" + centrality + "/pion.npz")
-            k_HotQCD = np.load("../results/HotQCD/" + centrality + "/kaon.npz")
-            p_HotQCD = np.load("../results/HotQCD/" + centrality + "/proton.npz")
-            pi_WB = np.load("../results/WB/" + centrality + "/pion.npz")
-            k_WB = np.load("../results/WB/" + centrality + "/kaon.npz")
-            p_WB = np.load("../results/WB/" + centrality + "/proton.npz")
+            pi_HotQCD = np.load("../results/hotqcd/" + centrality + "/pion.npz")
+            k_HotQCD = np.load("../results/hotqcd/" + centrality + "/kaon.npz")
+            p_HotQCD = np.load("../results/hotqcd/" + centrality + "/proton.npz")
+            pi_WB = np.load("../results/wb/" + centrality + "/pion.npz")
+            k_WB = np.load("../results/wb/" + centrality + "/kaon.npz")
+            p_WB = np.load("../results/wb/" + centrality + "/proton.npz")
         except IOError:
             print("missing file in", system + centrality)
         else:
@@ -186,7 +184,7 @@ def spectra():
             ax.plot(np.linspace(0,3,100), np.ones(100), linewidth=0.2, color='gray')
            
             ax.set_xlim([0,3.0])
-            ax.set_ylim([0.5,1.5])
+            ax.set_ylim([0.7,1.3])
 
     ax2a.tick_params(labelleft='off')
     ax3a.tick_params(labelleft='off')
@@ -202,14 +200,14 @@ def spectra():
         ax.tick_params(top='off', right='off', labelleft='off')
     ax1b.tick_params(labelleft='on')
     ax1b.set_ylabel("Ratio")
-    ax1b.set_yticks([0.7, 1.0, 1.3])
-    ax3b.annotate('S95', xy=(1.025,0.5), va='center', xycoords='axes fraction', rotation=-90, fontsize=texnormal)
+    ax1b.set_yticks([0.8, 1.0, 1.2])
+    ax3b.annotate('S95/HQCD', xy=(1.025,0.5), va='center', xycoords='axes fraction', rotation=-90, fontsize=texnormal)
 
     for ax, centrality in zip(axes, centralities):
         try:
-            pi_HotQCD = np.load("../results/HotQCD/" + centrality + "/pion.npz")
-            k_HotQCD = np.load("../results/HotQCD/" + centrality + "/kaon.npz")
-            p_HotQCD = np.load("../results/HotQCD/" + centrality + "/proton.npz")
+            pi_HotQCD = np.load("../results/hotqcd/" + centrality + "/pion.npz")
+            k_HotQCD = np.load("../results/hotqcd/" + centrality + "/kaon.npz")
+            p_HotQCD = np.load("../results/hotqcd/" + centrality + "/proton.npz")
             pi_s95 = np.load("../results/s95/" + centrality + "/pion.npz")
             k_s95 = np.load("../results/s95/" + centrality + "/kaon.npz")
             p_s95 = np.load("../results/s95/" + centrality + "/proton.npz")
@@ -239,7 +237,7 @@ def spectra():
             
             ax.set_xlim([0,3.0])
             ax.set_xlabel("$p_T$ [GeV]")
-            ax.set_ylim([0.5,1.5])
+            ax.set_ylim([0.7,1.3])
 
     plt.tight_layout(pad=.1, w_pad=0, rect=[0,0,0.975,1])
 

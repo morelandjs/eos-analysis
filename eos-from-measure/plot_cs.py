@@ -70,10 +70,6 @@ gray = '#C9C9C9'
 
 hbarc = 0.19733
 
-#def derivative(x_, y_, xs_):
-#    f = interp1d(x_,y_)
-#    for 
-        
     
 ####################################################################################
 
@@ -123,4 +119,4 @@ plt.ylabel('$c_s^2$')
 plt.tight_layout(pad=0.2)
 plt.legend(bbox_to_anchor=(1.02,0.5))
 plt.savefig('cs.pdf')
-plt.show()
+#plt.show()

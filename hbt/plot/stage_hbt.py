@@ -4,7 +4,6 @@
 from __future__ import division, print_function, unicode_literals
 
 import functools
-
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
 from matplotlib import cm

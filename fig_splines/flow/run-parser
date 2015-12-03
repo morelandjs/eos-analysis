@@ -1,0 +1,13 @@
+#!/usr/bin/bash
+
+qvectors() {
+    eos=$1
+    #path=/var/phy/project/nukeserv/jsm55/eos-study/urqmd-events/splines
+    path=/var/phy/project/nukeserv/jsm55/eos-study/urqmd-events/
+    events=$path/$eos/20to30/*.urqmd.gz
+    zcat $events | ./urqmd-observables | gzip > results/$eos.gz
+}
+export -f qvectors
+
+#parallel qvectors ::: hotqcd_{0..99}
+parallel qvectors ::: hotqcd wb s95

@@ -1,0 +1,2 @@
+#!/bin/bash
+g++ -std=c++11 -march=native -o urqmd-observables urqmd-observables.cxx

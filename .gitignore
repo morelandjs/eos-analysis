@@ -12,9 +12,5 @@
 *.out
 *.pdf
 **/build
-data/
-hbt/results
-initial-condition
-trento/build
-trento/data
+**/results
 
